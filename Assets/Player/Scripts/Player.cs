@@ -50,6 +50,7 @@ public class Player : NetworkBehaviour, IPlayerState
     [SerializeField] private bool _running = false;
 
     [Header("Jumping")]
+    [SerializeField] private bool _jumping = false;
     [SerializeField] private float _currentJumpHeight = 0f;
     [SerializeField] private float _minJumpHeight = 5f;
     [SerializeField] private float _maxJumpHeight = 10f;
@@ -140,6 +141,11 @@ public class Player : NetworkBehaviour, IPlayerState
 
         if (_currentState != IPlayerState.PlayerState.Climbing)
         {
+            if (!IsGrounded() && !_jumping)
+            {
+                SetState(IPlayerState.PlayerState.Falling);
+            }
+
             // Rotate player to camera rot
             Quaternion facingDirection = Quaternion.Euler(0, _cam.transform.rotation.eulerAngles.y, 0);
             transform.rotation = facingDirection;
@@ -219,11 +225,13 @@ public class Player : NetworkBehaviour, IPlayerState
 
     public void JumpingUpdate()
     {
+        _jumping = true;
         _currentJumpHeight = Mathf.Max(_minJumpHeight, _currentJumpHeight);
         _currentJumpHeight = (_currentJumpHeight < _maxJumpHeight) ? _currentJumpHeight + Time.deltaTime * _jumpHeightScaler : _maxJumpHeight;
 
         if(_currentJumpHeight >= _maxJumpHeight)
         {
+            _jumping = false;
             SetState(IPlayerState.PlayerState.Falling);
         }
     }
@@ -293,11 +301,12 @@ public class Player : NetworkBehaviour, IPlayerState
         wallNormal = Vector3.zero;
 
         Vector3 rayOrigin = transform.position + Vector3.up * 1f;
+        Vector3 bottomRayOrigin = transform.position - Vector3.up * 2f;
         Vector3 rayDirection = transform.forward;
 
         Debug.DrawRay(rayOrigin, rayDirection * ClimbCheckDistance, Color.blue);
 
-        if (Physics.Raycast(rayOrigin, rayDirection, out RaycastHit hit, ClimbCheckDistance, _wallLayer))
+        if (Physics.Raycast(bottomRayOrigin, rayDirection, out RaycastHit hit, ClimbCheckDistance, _wallLayer))
         {
             wallNormal = hit.normal;
 
@@ -311,6 +320,21 @@ public class Player : NetworkBehaviour, IPlayerState
             return true;
         }
 
+        if (Physics.Raycast(rayOrigin, rayDirection, out RaycastHit hitBottom, ClimbCheckDistance, _wallLayer))
+        {
+            wallNormal = hitBottom.normal;
+
+            Vector3 wallRight = Vector3.Cross(wallNormal, Vector3.up).normalized;
+            climbDirection = Vector3.Cross(wallRight, wallNormal).normalized;
+
+            Debug.DrawRay(hitBottom.point, wallNormal, Color.red);
+            Debug.DrawRay(hitBottom.point, wallRight, Color.yellow);
+            Debug.DrawRay(hitBottom.point, climbDirection, Color.green);
+
+            return true;
+        }
+
+        SetState((_running) ? IPlayerState.PlayerState.Running : IPlayerState.PlayerState.Walking);
         return false;
     }
 
