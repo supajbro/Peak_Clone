@@ -54,6 +54,7 @@ MonoBehaviour:
   syncInterval: 0
   _currentState: 0
   _previousState: 0
+  _ui: {fileID: 7771001418215781313, guid: a615be196de128640b731e8984c7a9a9, type: 3}
   _camPrefab: {fileID: 5469460888547916821, guid: 7e79ec819b132d34f8cc923c4c447e67, type: 3}
   _camPosition: {fileID: 9199886159177958217}
   _currentSpeed: 0
@@ -61,6 +62,7 @@ MonoBehaviour:
   _maxSpeed: 50
   _speedScaler: 50
   _running: 0
+  _jumping: 0
   _currentJumpHeight: 0
   _minJumpHeight: 10
   _maxJumpHeight: 25

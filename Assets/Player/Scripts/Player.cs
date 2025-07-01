@@ -1,4 +1,5 @@
 using Mirror;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -24,6 +25,7 @@ public class Player : NetworkBehaviour, IPlayerState
         get => _previousState;
         set => _previousState = value;
     }
+    public Action<IPlayerState.PlayerState> OnPlayerStateChanged;
     public void SetState(IPlayerState.PlayerState state)
     {
         if(state == _currentState)
@@ -33,8 +35,11 @@ public class Player : NetworkBehaviour, IPlayerState
 
         _previousState = _currentState;
         _currentState = state;
+        OnPlayerStateChanged.Invoke(_currentState);
     }
 
+    [Header("Main")]
+    [SerializeField] private PlayerUI _ui;
     private CharacterController _controller;
 
     [Header("Camera")]
@@ -77,6 +82,9 @@ public class Player : NetworkBehaviour, IPlayerState
 
             _cam = Instantiate(_camPrefab, _camPosition);
             _cam.transform.localPosition = Vector3.zero;
+
+            var ui = Instantiate(_ui);
+            ui.InitUI(this);
 
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
@@ -133,11 +141,17 @@ public class Player : NetworkBehaviour, IPlayerState
         if (CanClimb() && Input.GetMouseButton(0))
         {
             SetState(IPlayerState.PlayerState.Climbing);
+            //return;
         }
         else if (Input.GetMouseButtonUp(0) && _currentState == IPlayerState.PlayerState.Climbing)
         {
             SetState(IPlayerState.PlayerState.Falling);
+            //return;
         }
+
+        // Rotate player to camera rot
+        Quaternion facingDirection = Quaternion.Euler(0, _cam.transform.rotation.eulerAngles.y, 0);
+        transform.rotation = facingDirection;
 
         if (_currentState != IPlayerState.PlayerState.Climbing)
         {
@@ -145,10 +159,6 @@ public class Player : NetworkBehaviour, IPlayerState
             {
                 SetState(IPlayerState.PlayerState.Falling);
             }
-
-            // Rotate player to camera rot
-            Quaternion facingDirection = Quaternion.Euler(0, _cam.transform.rotation.eulerAngles.y, 0);
-            transform.rotation = facingDirection;
 
             // Move player
             Vector3 playerMovement = new Vector3(h * .25f, _currentJumpHeight, v * .25f);
@@ -199,6 +209,11 @@ public class Player : NetworkBehaviour, IPlayerState
     public void IdleUpdate()
     {
         _currentSpeed = 0f;
+
+        if (!IsGrounded())
+        {
+            SetState(IPlayerState.PlayerState.Falling);
+        }
     }
 
     public void WalkingUpdate()
@@ -210,6 +225,11 @@ public class Player : NetworkBehaviour, IPlayerState
             _running = true;
             SetState(IPlayerState.PlayerState.Running);
         }
+
+        if (!IsGrounded())
+        {
+            SetState(IPlayerState.PlayerState.Falling);
+        }
     }
 
     public void RunningUpdate()
@@ -220,6 +240,11 @@ public class Player : NetworkBehaviour, IPlayerState
         {
             _running = false;
             SetState(IPlayerState.PlayerState.Walking);
+        }
+
+        if (!IsGrounded())
+        {
+            SetState(IPlayerState.PlayerState.Falling);
         }
     }
 
@@ -250,6 +275,16 @@ public class Player : NetworkBehaviour, IPlayerState
 
     public void ClimbingUpdate()
     {
+        if (_running)
+        {
+            _running = false;
+        }
+
+        if(_currentJumpHeight != 0f)
+        {
+            _currentJumpHeight = 0f;
+        }
+
         // Make player jump to position looking at
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -261,6 +296,7 @@ public class Player : NetworkBehaviour, IPlayerState
             // Get direction vectors based on wall
             Vector3 climbUp = climbDir;
             Vector3 wallRight = Vector3.Cross(wallNormal, climbUp).normalized;
+            Vector3 wallForward = Vector3.Cross(wallRight, wallNormal).normalized;
 
             Vector3 move = Vector3.zero;
 
@@ -272,6 +308,13 @@ public class Player : NetworkBehaviour, IPlayerState
                 move += wallRight;
             if (Input.GetKey(KeyCode.A))
                 move -= wallRight;
+
+            // Move forward
+            if (!_top && _bottom)
+            {
+                Debug.Log("[Climbing] Going forward");
+                move += transform.forward;
+            }
 
             if (move != Vector3.zero)
             {
@@ -294,6 +337,8 @@ public class Player : NetworkBehaviour, IPlayerState
         return false;
     }
 
+    bool _top = false;
+    bool _bottom = false;
     public bool ClimbDirection(out Vector3 climbDirection, out Vector3 wallNormal)
     {
         const float ClimbCheckDistance = 2f;
@@ -301,12 +346,16 @@ public class Player : NetworkBehaviour, IPlayerState
         wallNormal = Vector3.zero;
 
         Vector3 rayOrigin = transform.position + Vector3.up * 1f;
-        Vector3 bottomRayOrigin = transform.position - Vector3.up * 2f;
+        Vector3 bottomRayOrigin = transform.position - Vector3.up * 4f;
         Vector3 rayDirection = transform.forward;
 
         Debug.DrawRay(rayOrigin, rayDirection * ClimbCheckDistance, Color.blue);
 
-        if (Physics.Raycast(bottomRayOrigin, rayDirection, out RaycastHit hit, ClimbCheckDistance, _wallLayer))
+        _top = false;
+        _bottom = false;
+
+        // Top of player
+        if (Physics.Raycast(rayOrigin, rayDirection, out RaycastHit hit, ClimbCheckDistance, _wallLayer))
         {
             wallNormal = hit.normal;
 
@@ -317,10 +366,13 @@ public class Player : NetworkBehaviour, IPlayerState
             Debug.DrawRay(hit.point, wallRight, Color.yellow);
             Debug.DrawRay(hit.point, climbDirection, Color.green);
 
+            _top = true;
+
             return true;
         }
 
-        if (Physics.Raycast(rayOrigin, rayDirection, out RaycastHit hitBottom, ClimbCheckDistance, _wallLayer))
+        // Bottom of player - runs if top is false so player can still climb up and get over the hill
+        if (Physics.Raycast(bottomRayOrigin, rayDirection, out RaycastHit hitBottom, ClimbCheckDistance, _wallLayer))
         {
             wallNormal = hitBottom.normal;
 
@@ -330,6 +382,8 @@ public class Player : NetworkBehaviour, IPlayerState
             Debug.DrawRay(hitBottom.point, wallNormal, Color.red);
             Debug.DrawRay(hitBottom.point, wallRight, Color.yellow);
             Debug.DrawRay(hitBottom.point, climbDirection, Color.green);
+
+            _bottom = true;
 
             return true;
         }
