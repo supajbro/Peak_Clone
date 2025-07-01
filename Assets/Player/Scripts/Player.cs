@@ -35,11 +35,12 @@ public class Player : NetworkBehaviour, IPlayerState
 
         _previousState = _currentState;
         _currentState = state;
-        OnPlayerStateChanged.Invoke(_currentState);
+        OnPlayerStateChanged?.Invoke(_currentState);
     }
 
     [Header("Main")]
     [SerializeField] private PlayerUI _ui;
+    [SerializeField] private Animator _anim;
     private CharacterController _controller;
 
     [Header("Camera")]
@@ -208,6 +209,9 @@ public class Player : NetworkBehaviour, IPlayerState
 
     public void IdleUpdate()
     {
+        _anim.SetFloat("moveSpeed", 0f);
+        _anim.SetBool("isClimbing", false);
+
         _currentSpeed = 0f;
 
         if (!IsGrounded())
@@ -218,6 +222,9 @@ public class Player : NetworkBehaviour, IPlayerState
 
     public void WalkingUpdate()
     {
+        _anim.SetFloat("moveSpeed", .5f);
+        _anim.SetBool("isClimbing", false);
+
         _currentSpeed = (_currentSpeed > _minSpeed) ? _currentSpeed - Time.deltaTime * _speedScaler : _minSpeed;
 
         if (Input.GetKeyDown(KeyCode.LeftShift))
@@ -234,6 +241,9 @@ public class Player : NetworkBehaviour, IPlayerState
 
     public void RunningUpdate()
     {
+        _anim.SetFloat("moveSpeed", 1f);
+        _anim.SetBool("isClimbing", false);
+
         _currentSpeed = (_currentSpeed < _maxSpeed) ? _currentSpeed + Time.deltaTime * _speedScaler : _maxSpeed;
 
         if (Input.GetKeyDown(KeyCode.LeftShift))
@@ -250,6 +260,8 @@ public class Player : NetworkBehaviour, IPlayerState
 
     public void JumpingUpdate()
     {
+        _anim.SetBool("isJumping", true);
+
         _jumping = true;
         _currentJumpHeight = Mathf.Max(_minJumpHeight, _currentJumpHeight);
         _currentJumpHeight = (_currentJumpHeight < _maxJumpHeight) ? _currentJumpHeight + Time.deltaTime * _jumpHeightScaler : _maxJumpHeight;
@@ -275,6 +287,8 @@ public class Player : NetworkBehaviour, IPlayerState
 
     public void ClimbingUpdate()
     {
+        _anim.SetBool("isClimbing", true);
+
         if (_running)
         {
             _running = false;
