@@ -41,6 +41,8 @@ public class Player : NetworkBehaviour, IPlayerState
     [Header("Main")]
     [SerializeField] private PlayerUI _ui;
     [SerializeField] private Animator _anim;
+    [SerializeField] private GameObject _playerHead;
+    [SerializeField] private GameObject _playerEyes;
     private CharacterController _controller;
 
     [Header("Camera")]
@@ -89,6 +91,10 @@ public class Player : NetworkBehaviour, IPlayerState
 
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+
+            // Hide the head client side only so it doesn't clip with camera
+            _playerHead.SetActive(false);
+            _playerEyes.SetActive(false);
         }
     }
 
@@ -101,6 +107,11 @@ public class Player : NetworkBehaviour, IPlayerState
 
     public void StateUpdate()
     {
+        if (!isLocalPlayer)
+        {
+            return;
+        }
+
         switch (_currentState)
         {
             case IPlayerState.PlayerState.Idle:
