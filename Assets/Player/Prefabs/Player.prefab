@@ -75,6 +75,11 @@ MonoBehaviour:
   _climbSpeed: 3
   _sensitivity: 10
   _smoothFactor: 0.5
+  _stamina:
+    _currentStamina: 0
+    _maxStamina: 100
+    _drainScaler: 15
+    _replenishScaler: 25
   _groundLayer:
     serializedVersion: 2
     m_Bits: 8

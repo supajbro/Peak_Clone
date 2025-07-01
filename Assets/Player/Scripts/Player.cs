@@ -1,11 +1,9 @@
 using Mirror;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SocialPlatforms;
 
-public class Player : NetworkBehaviour, IPlayerState
+public class Player : NetworkBehaviour
 {
     [Header("States")]
     [SerializeField] private IPlayerState.PlayerState _currentState = IPlayerState.PlayerState.Idle;
@@ -25,6 +23,7 @@ public class Player : NetworkBehaviour, IPlayerState
         get => _previousState;
         set => _previousState = value;
     }
+
     public Action<IPlayerState.PlayerState> OnPlayerStateChanged;
     public void SetState(IPlayerState.PlayerState state)
     {
@@ -73,6 +72,10 @@ public class Player : NetworkBehaviour, IPlayerState
     private float _verticalRot;
     private float _horizontalRot;
 
+    [Header("Stamina")]
+    [SerializeField] private Stamina _stamina;
+    public Stamina MyStamina => _stamina;
+
     [Header("Misc")]
     [SerializeField] private LayerMask _groundLayer;
     [SerializeField] private LayerMask _wallLayer;
@@ -88,6 +91,8 @@ public class Player : NetworkBehaviour, IPlayerState
 
             var ui = Instantiate(_ui);
             ui.InitUI(this);
+
+            _stamina.SetStamina(_stamina.MaxStamina);
 
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
@@ -150,7 +155,7 @@ public class Player : NetworkBehaviour, IPlayerState
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
 
-        if (CanClimb() && Input.GetMouseButton(0))
+        if (CanClimb() && Input.GetMouseButton(0) && _stamina.CurrentStamina > 0f)
         {
             SetState(IPlayerState.PlayerState.Climbing);
             //return;
@@ -159,6 +164,10 @@ public class Player : NetworkBehaviour, IPlayerState
         {
             SetState(IPlayerState.PlayerState.Falling);
             //return;
+        }
+        else if (CanClimb() && _stamina.CurrentStamina <= 0f)
+        {
+            SetState(IPlayerState.PlayerState.Falling);
         }
 
         // Rotate player to camera rot
@@ -222,6 +231,7 @@ public class Player : NetworkBehaviour, IPlayerState
     {
         _anim.SetFloat("moveSpeed", 0f);
         _anim.SetBool("isClimbing", false);
+        _stamina.ReplenishStamina();
 
         _currentSpeed = 0f;
 
@@ -235,6 +245,7 @@ public class Player : NetworkBehaviour, IPlayerState
     {
         _anim.SetFloat("moveSpeed", .5f);
         _anim.SetBool("isClimbing", false);
+        _stamina.ReplenishStamina();
 
         _currentSpeed = (_currentSpeed > _minSpeed) ? _currentSpeed - Time.deltaTime * _speedScaler : _minSpeed;
 
@@ -255,9 +266,11 @@ public class Player : NetworkBehaviour, IPlayerState
         _anim.SetFloat("moveSpeed", 1f);
         _anim.SetBool("isClimbing", false);
 
+        _stamina.DrainStamina();
+
         _currentSpeed = (_currentSpeed < _maxSpeed) ? _currentSpeed + Time.deltaTime * _speedScaler : _maxSpeed;
 
-        if (Input.GetKeyDown(KeyCode.LeftShift))
+        if (Input.GetKeyDown(KeyCode.LeftShift) || _stamina.CurrentStamina <= 0f)
         {
             _running = false;
             SetState(IPlayerState.PlayerState.Walking);
@@ -272,6 +285,7 @@ public class Player : NetworkBehaviour, IPlayerState
     public void JumpingUpdate()
     {
         _anim.SetBool("isJumping", true);
+        _stamina.DrainStamina();
 
         _jumping = true;
         _currentJumpHeight = Mathf.Max(_minJumpHeight, _currentJumpHeight);
@@ -299,6 +313,7 @@ public class Player : NetworkBehaviour, IPlayerState
     public void ClimbingUpdate()
     {
         _anim.SetBool("isClimbing", true);
+        _stamina.DrainStamina();
 
         if (_running)
         {
@@ -428,5 +443,69 @@ public class Player : NetworkBehaviour, IPlayerState
             return true;
         }
         return false;
+    }
+}
+
+[System.Serializable]
+public class Stamina : IStamina
+{
+    [SerializeField] private float _currentStamina;
+    public float CurrentStamina
+    {
+        get => _currentStamina;
+        set
+        {
+            _currentStamina = value;
+        }
+    }
+
+    [SerializeField] private float _maxStamina;
+    public float MaxStamina
+    {
+        get => _maxStamina;
+        set
+        {
+            _maxStamina = value;
+        }
+    }
+
+    [SerializeField] private float _drainScaler;
+    public float DrainScaler
+    {
+        get => _drainScaler;
+        set
+        {
+            _drainScaler = value;
+        }
+    }
+
+    [SerializeField] private float _replenishScaler;
+    public float ReplenishScaler
+    {
+        get => _replenishScaler;
+        set
+        {
+            _replenishScaler = value;
+        }
+    }
+
+    public Action<float> OnStaminaChanged { get; set; }
+
+    public void DrainStamina()
+    {
+        _currentStamina = Mathf.Max(0, _currentStamina - Time.deltaTime * _drainScaler);
+        OnStaminaChanged?.Invoke(_currentStamina);
+    }
+
+    public void ReplenishStamina()
+    {
+        _currentStamina = Mathf.Min(_maxStamina, _currentStamina + Time.deltaTime * _replenishScaler);
+        OnStaminaChanged?.Invoke(_currentStamina);
+    }
+
+    public void SetStamina(float value)
+    {
+        _currentStamina = value;
+        OnStaminaChanged?.Invoke(_currentStamina);
     }
 }
