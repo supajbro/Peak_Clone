@@ -42,6 +42,7 @@ public class Player : NetworkBehaviour
     [SerializeField] private Animator _anim;
     [SerializeField] private GameObject _playerHead;
     [SerializeField] private GameObject _playerEyes;
+    [SerializeField] private GameObject _playerBody;
     private CharacterController _controller;
 
     [Header("Camera")]
@@ -100,6 +101,7 @@ public class Player : NetworkBehaviour
             // Hide the head client side only so it doesn't clip with camera
             _playerHead.SetActive(false);
             _playerEyes.SetActive(false);
+            _playerBody.SetActive(false);
         }
     }
 
@@ -301,7 +303,8 @@ public class Player : NetworkBehaviour
     public void FallingUpdate()
     {
         //_currentJumpHeight = Mathf.Min(-_maxJumpHeight, _currentJumpHeight);
-        _currentJumpHeight = (_currentJumpHeight > -_maxJumpHeight) ? _currentJumpHeight - Time.deltaTime * _jumpHeightScaler : -_maxJumpHeight;
+        //_currentJumpHeight = (_currentJumpHeight > -_maxJumpHeight) ? _currentJumpHeight - Time.deltaTime * _jumpHeightScaler : -_maxJumpHeight;
+        _currentJumpHeight -= Time.deltaTime * _jumpHeightScaler;
 
         if (IsGrounded())
         {
@@ -359,7 +362,7 @@ public class Player : NetworkBehaviour
             if (move != Vector3.zero)
             {
                 Vector3 climbVector = move.normalized * _climbSpeed * Time.deltaTime;
-                _controller.Move(climbVector);
+                _controller?.Move(climbVector);
 
                 Debug.DrawRay(transform.position, climbVector, Color.cyan);
             }

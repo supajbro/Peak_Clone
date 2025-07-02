@@ -60,6 +60,7 @@ MonoBehaviour:
   _anim: {fileID: 151970179970813606}
   _playerHead: {fileID: 5054160486620301942}
   _playerEyes: {fileID: 7360006815232232908}
+  _playerBody: {fileID: 3645228109975067186}
   _camPrefab: {fileID: 5469460888547916821, guid: 7e79ec819b132d34f8cc923c4c447e67, type: 3}
   _camPosition: {fileID: 9199886159177958217}
   _currentSpeed: 0
@@ -70,7 +71,7 @@ MonoBehaviour:
   _jumping: 0
   _currentJumpHeight: 0
   _minJumpHeight: 10
-  _maxJumpHeight: 25
+  _maxJumpHeight: 20
   _jumpHeightScaler: 50
   _climbSpeed: 3
   _sensitivity: 10
@@ -205,7 +206,7 @@ Transform:
   m_GameObject: {fileID: 7442212894184637256}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalPosition: {x: 0, y: 1, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -390,6 +391,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 151970179970813606}
   m_SourcePrefab: {fileID: 100100000, guid: 86e9b2833d2c69d44bed55f4503e5257, type: 3}
+--- !u!1 &3645228109975067186 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 635547659545568360, guid: 86e9b2833d2c69d44bed55f4503e5257, type: 3}
+  m_PrefabInstance: {fileID: 4199492980733541978}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &3929093035212882699 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 86e9b2833d2c69d44bed55f4503e5257, type: 3}
