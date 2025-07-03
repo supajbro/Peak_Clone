@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Skyscraper.unity
-    guid: 8358ccd472d3250449ecdc252c23e876
+    path: Assets/Scenes/Level_01.unity
+    guid: 3b4e479ffc92d5b43b0ef3787535a321
   m_configObjects: {}

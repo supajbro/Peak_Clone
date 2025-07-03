@@ -1,5 +1,6 @@
 using Mirror;
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SocialPlatforms;
 
@@ -63,6 +64,10 @@ public class Player : NetworkBehaviour
     [SerializeField] private float _minJumpHeight = 5f;
     [SerializeField] private float _maxJumpHeight = 10f;
     [SerializeField] private float _jumpHeightScaler = 10f;
+
+    [Header("Bounce")]
+    [SerializeField] private float _bounceHeightScaler = 100f;
+    [SerializeField] private float _maxBounceHeight = 100f;
 
     [Header("Climbing")]
     [SerializeField] private float _climbSpeed = 3f;
@@ -156,6 +161,16 @@ public class Player : NetworkBehaviour
 
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
+
+        if (_isKnockback)
+        {
+            if (IsGrounded())
+            {
+                _isKnockback = false;
+                _knockbackVelocity = Vector3.zero;
+            }
+            _controller.Move(_knockbackVelocity * Time.deltaTime);
+        }
 
         if (CanClimb() && Input.GetMouseButton(0) && _stamina.CurrentStamina > _stamina.MinStamina)
         {
@@ -369,10 +384,9 @@ public class Player : NetworkBehaviour
         }
     }
 
+    const float ClimbCheckDistance = 1f;
     public bool CanClimb()
     {
-        const float ClimbCheckDistance = 2f;
-
         if (Physics.Raycast(transform.position, transform.forward, ClimbCheckDistance, _wallLayer))
         {
             return true;
@@ -384,7 +398,6 @@ public class Player : NetworkBehaviour
     bool _bottom = false;
     public bool ClimbDirection(out Vector3 climbDirection, out Vector3 wallNormal)
     {
-        const float ClimbCheckDistance = 2f;
         climbDirection = Vector3.zero;
         wallNormal = Vector3.zero;
 
@@ -446,6 +459,49 @@ public class Player : NetworkBehaviour
             return true;
         }
         return false;
+    }
+
+    public void BouncePlayer()
+    {
+        _anim.SetBool("isJumping", true);
+
+        _jumping = true;
+        _currentJumpHeight = Mathf.Max(_minJumpHeight, _currentJumpHeight);
+        _currentJumpHeight = (_currentJumpHeight < _maxBounceHeight) ? _currentJumpHeight + Time.deltaTime * _bounceHeightScaler : _maxBounceHeight;
+
+        if (_currentJumpHeight >= _maxBounceHeight)
+        {
+            _jumping = false;
+            SetState(IPlayerState.PlayerState.Falling);
+        }
+    }
+
+    private bool _isKnockback;
+    private Vector3 _knockbackVelocity;
+    public void Knockback(Vector3 direction, float force, float duration, float upwardForce = 0f)
+    {
+        if (_isKnockback)
+        {
+            return;
+        }
+        Vector3 finalDirection = direction.normalized + Vector3.up * upwardForce;
+        StartCoroutine(DoKnockback(finalDirection, force, duration));
+    }
+
+    private IEnumerator DoKnockback(Vector3 direction, float force, float duration)
+    {
+        _isKnockback = true;
+        float timer = 0f;
+        _knockbackVelocity = direction.normalized * force;
+
+        while (timer < duration)
+        {
+            timer += Time.deltaTime;
+            yield return null;
+        }
+
+        //_knockbackVelocity = Vector3.zero;
+        //_isKnockback = false;
     }
 }
 
