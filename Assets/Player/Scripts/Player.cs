@@ -1,8 +1,10 @@
 using Mirror;
 using System;
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SocialPlatforms;
+using static UnityEngine.UI.Image;
 
 public class Player : NetworkBehaviour
 {
@@ -385,13 +387,28 @@ public class Player : NetworkBehaviour
     }
 
     const float ClimbCheckDistance = 1f;
+    const float ClimbRadius = .5f;
+    //public bool CanClimb()
+    //{
+    //    if (Physics.Raycast(transform.position, transform.forward, ClimbCheckDistance, _wallLayer))
+    //    {
+    //        return true;
+    //    }
+    //    return false;
+    //}
     public bool CanClimb()
     {
-        if (Physics.Raycast(transform.position, transform.forward, ClimbCheckDistance, _wallLayer))
-        {
-            return true;
-        }
-        return false;
+        Vector3 origin = transform.position + Vector3.up; // adjust height if needed
+        Vector3 direction = transform.forward;
+        return Physics.SphereCast(origin, ClimbRadius, direction, out RaycastHit hit, ClimbCheckDistance, _wallLayer);
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position + Vector3.up, ClimbRadius);
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(transform.position - Vector3.up * 4f, ClimbRadius);
     }
 
     bool _top = false;
@@ -401,7 +418,7 @@ public class Player : NetworkBehaviour
         climbDirection = Vector3.zero;
         wallNormal = Vector3.zero;
 
-        Vector3 rayOrigin = transform.position + Vector3.up * 1f;
+        Vector3 rayOrigin = transform.position + Vector3.up;
         Vector3 bottomRayOrigin = transform.position - Vector3.up * 4f;
         Vector3 rayDirection = transform.forward;
 
@@ -411,7 +428,8 @@ public class Player : NetworkBehaviour
         _bottom = false;
 
         // Top of player
-        if (Physics.Raycast(rayOrigin, rayDirection, out RaycastHit hit, ClimbCheckDistance, _wallLayer))
+        //if (Physics.Raycast(rayOrigin, rayDirection, out RaycastHit hit, ClimbCheckDistance, _wallLayer))
+        if(Physics.SphereCast(rayOrigin, ClimbRadius, rayDirection, out RaycastHit hit, ClimbCheckDistance, _wallLayer))
         {
             wallNormal = hit.normal;
 
@@ -428,6 +446,7 @@ public class Player : NetworkBehaviour
         }
 
         // Bottom of player - runs if top is false so player can still climb up and get over the hill
+        //if (Physics.SphereCast(bottomRayOrigin, ClimbRadius, rayDirection, out RaycastHit hitBottom, ClimbCheckDistance, _wallLayer))
         if (Physics.Raycast(bottomRayOrigin, rayDirection, out RaycastHit hitBottom, ClimbCheckDistance, _wallLayer))
         {
             wallNormal = hitBottom.normal;
