@@ -56,6 +56,7 @@ MonoBehaviour:
   syncInterval: 0
   _currentState: 0
   _previousState: 0
+  _stats: {fileID: 11400000, guid: 105aa8156f38c3f45a31c35627323547, type: 2}
   _ui: {fileID: 7771001418215781313, guid: a615be196de128640b731e8984c7a9a9, type: 3}
   _anim: {fileID: 151970179970813606}
   _playerHead: {fileID: 5054160486620301942}
@@ -64,20 +65,9 @@ MonoBehaviour:
   _camPrefab: {fileID: 5469460888547916821, guid: 7e79ec819b132d34f8cc923c4c447e67, type: 3}
   _camPosition: {fileID: 9199886159177958217}
   _currentSpeed: 0
-  _minSpeed: 25
-  _maxSpeed: 50
-  _speedScaler: 50
   _running: 0
   _jumping: 0
   _currentJumpHeight: 0
-  _minJumpHeight: 10
-  _maxJumpHeight: 20
-  _jumpHeightScaler: 50
-  _bounceHeightScaler: 1000
-  _maxBounceHeight: 250
-  _climbSpeed: 3
-  _sensitivity: 10
-  _smoothFactor: 0.5
   _stamina:
     _currentStamina: 0
     _maxStamina: 100

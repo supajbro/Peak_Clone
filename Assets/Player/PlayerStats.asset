@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e06e8b485ba3174ba5fbe1cf6938dca, type: 3}
+  m_Name: PlayerStats
+  m_EditorClassIdentifier: 
+  _currentSpeed: 0
+  _minSpeed: 25
+  _maxSpeed: 50
+  _speedScaler: 50
+  _running: 0
+  _jumping: 0
+  _currentJumpHeight: 0
+  _minJumpHeight: 10
+  _maxJumpHeight: 20
+  _jumpHeightScaler: 50
+  _bounceHeightScaler: 1000
+  _maxBounceHeight: 250
+  _climbSpeed: 3
+  _sensitivity: 10
+  _smoothFactor: 0.5
+  _groundLayer:
+    serializedVersion: 2
+    m_Bits: 8
+  _wallLayer:
+    serializedVersion: 2
+    m_Bits: 72

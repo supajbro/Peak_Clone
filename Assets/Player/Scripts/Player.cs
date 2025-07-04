@@ -1,13 +1,11 @@
 using Mirror;
 using System;
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.SocialPlatforms;
-using static UnityEngine.UI.Image;
 
 public class Player : NetworkBehaviour
 {
+    #region - STATES -
     [Header("States")]
     [SerializeField] private IPlayerState.PlayerState _currentState = IPlayerState.PlayerState.Idle;
     [SerializeField] private IPlayerState.PlayerState _previousState;
@@ -39,8 +37,10 @@ public class Player : NetworkBehaviour
         _currentState = state;
         OnPlayerStateChanged?.Invoke(_currentState);
     }
+    #endregion
 
     [Header("Main")]
+    [SerializeField] private PlayerStats _stats;
     [SerializeField] private PlayerUI _ui;
     [SerializeField] private Animator _anim;
     [SerializeField] private GameObject _playerHead;
@@ -55,30 +55,13 @@ public class Player : NetworkBehaviour
 
     [Header("Movement")]
     [SerializeField] private float _currentSpeed = 0f;
-    [SerializeField] private float _minSpeed = 2f;
-    [SerializeField] private float _maxSpeed = 5f;
-    [SerializeField] private float _speedScaler = 10f;
     [SerializeField] private bool _running = false;
+    private float _verticalRot;
+    private float _horizontalRot;
 
     [Header("Jumping")]
     [SerializeField] private bool _jumping = false;
     [SerializeField] private float _currentJumpHeight = 0f;
-    [SerializeField] private float _minJumpHeight = 5f;
-    [SerializeField] private float _maxJumpHeight = 10f;
-    [SerializeField] private float _jumpHeightScaler = 10f;
-
-    [Header("Bounce")]
-    [SerializeField] private float _bounceHeightScaler = 100f;
-    [SerializeField] private float _maxBounceHeight = 100f;
-
-    [Header("Climbing")]
-    [SerializeField] private float _climbSpeed = 3f;
-
-    [Header("Rotation")]
-    [SerializeField] private float _sensitivity = 10f;
-    [SerializeField, Range(0f, 1f)] private float _smoothFactor = 0.5f;
-    private float _verticalRot;
-    private float _horizontalRot;
 
     [Header("Stamina")]
     [SerializeField] private Stamina _stamina;
@@ -90,26 +73,28 @@ public class Player : NetworkBehaviour
 
     private void Start()
     {
-        if (isLocalPlayer)
+        if (!isLocalPlayer)
         {
-            _controller = GetComponent<CharacterController>();
-
-            _cam = Instantiate(_camPrefab, _camPosition);
-            _cam.transform.localPosition = Vector3.zero;
-
-            var ui = Instantiate(_ui);
-            ui.InitUI(this);
-
-            _stamina.SetStamina(_stamina.MaxStamina);
-
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-
-            // Hide the head client side only so it doesn't clip with camera
-            _playerHead.SetActive(false);
-            _playerEyes.SetActive(false);
-            _playerBody.SetActive(false);
+            return;
         }
+
+        _controller = GetComponent<CharacterController>();
+
+        _cam = Instantiate(_camPrefab, _camPosition);
+        _cam.transform.localPosition = Vector3.zero;
+
+        var ui = Instantiate(_ui);
+        ui.InitUI(this);
+
+        _stamina.SetStamina(_stamina.MaxStamina);
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        // Hide the head client side only so it doesn't clip with camera
+        _playerHead.SetActive(false);
+        _playerEyes.SetActive(false);
+        _playerBody.SetActive(false);
     }
 
     private void Update()
@@ -119,6 +104,9 @@ public class Player : NetworkBehaviour
         MovementUpdate();
     }
 
+    /// <summary>
+    /// Update functon for the states
+    /// </summary>
     public void StateUpdate()
     {
         if (!isLocalPlayer)
@@ -154,6 +142,9 @@ public class Player : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Determines what state the player should be in based on their movement
+    /// </summary>
     private void MovementUpdate()
     {
         if (!isLocalPlayer)
@@ -164,25 +155,15 @@ public class Player : NetworkBehaviour
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
 
-        if (_isKnockback)
-        {
-            if (IsGrounded())
-            {
-                _isKnockback = false;
-                _knockbackVelocity = Vector3.zero;
-            }
-            _controller.Move(_knockbackVelocity * Time.deltaTime);
-        }
+        ApplyKnockback();
 
         if (CanClimb() && Input.GetMouseButton(0) && _stamina.CurrentStamina > _stamina.MinStamina)
         {
             SetState(IPlayerState.PlayerState.Climbing);
-            //return;
         }
         else if (Input.GetMouseButtonUp(0) && _currentState == IPlayerState.PlayerState.Climbing)
         {
             SetState(IPlayerState.PlayerState.Falling);
-            //return;
         }
         else if (CanClimb() && _stamina.CurrentStamina <= _stamina.MinStamina)
         {
@@ -206,6 +187,8 @@ public class Player : NetworkBehaviour
             move.y = _currentJumpHeight * Time.deltaTime;
             _controller?.Move(move);
 
+            CheckIfRunning(playerMovement);
+
             if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
             {
                 SetState(IPlayerState.PlayerState.Jumping);
@@ -217,7 +200,7 @@ public class Player : NetworkBehaviour
                     SetState(IPlayerState.PlayerState.Idle);
                     _running = false;
                 }
-                else if (_currentState != IPlayerState.PlayerState.Running)
+                else
                 {
                     SetState((_running) ? IPlayerState.PlayerState.Running : IPlayerState.PlayerState.Walking);
                 }
@@ -225,6 +208,9 @@ public class Player : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Rotate the camera via the mouse
+    /// </summary>
     private void RotateUpdate()
     {
         if (!isLocalPlayer)
@@ -236,13 +222,13 @@ public class Player : NetworkBehaviour
         float mouseY = Input.GetAxis("Mouse Y");
 
         // Update vertical and horizontal rotation
-        _verticalRot -= mouseY * _sensitivity;
+        _verticalRot -= mouseY * _stats.Sensitivity;
         _verticalRot = Mathf.Clamp(_verticalRot, -70f, 70);
-        _horizontalRot += mouseX * _sensitivity;
+        _horizontalRot += mouseX * _stats.Sensitivity;
 
         // Rotate camera to mouse position
-        float smoothedVerticalRot = Mathf.LerpAngle(_cam.transform.eulerAngles.x, _verticalRot, _smoothFactor);
-        float smoothedHorizontalRot = Mathf.LerpAngle(_cam.transform.eulerAngles.y, _horizontalRot, _smoothFactor);
+        float smoothedVerticalRot = Mathf.LerpAngle(_cam.transform.eulerAngles.x, _verticalRot, _stats.SmoothFactor);
+        float smoothedHorizontalRot = Mathf.LerpAngle(_cam.transform.eulerAngles.y, _horizontalRot, _stats.SmoothFactor);
         _cam.transform.rotation = Quaternion.Euler(smoothedVerticalRot, smoothedHorizontalRot, 0f);
     }
 
@@ -266,13 +252,7 @@ public class Player : NetworkBehaviour
         _anim.SetBool("isClimbing", false);
         _stamina.ReplenishStamina();
 
-        _currentSpeed = (_currentSpeed > _minSpeed) ? _currentSpeed - Time.deltaTime * _speedScaler : _minSpeed;
-
-        if (Input.GetKeyDown(KeyCode.LeftShift))
-        {
-            _running = true;
-            SetState(IPlayerState.PlayerState.Running);
-        }
+        _currentSpeed = (_currentSpeed > _stats.MinSpeed) ? _currentSpeed - Time.deltaTime * _stats.SpeedScaler : _stats.MinSpeed;
 
         if (!IsGrounded())
         {
@@ -287,9 +267,9 @@ public class Player : NetworkBehaviour
 
         _stamina.DrainStamina();
 
-        _currentSpeed = (_currentSpeed < _maxSpeed) ? _currentSpeed + Time.deltaTime * _speedScaler : _maxSpeed;
+        _currentSpeed = (_currentSpeed < _stats.MaxSpeed) ? _currentSpeed + Time.deltaTime * _stats.SpeedScaler : _stats.MaxSpeed;
 
-        if (Input.GetKeyDown(KeyCode.LeftShift) || _stamina.CurrentStamina <= _stamina.MinStamina)
+        if (_stamina.CurrentStamina <= _stamina.MinStamina)
         {
             _running = false;
             SetState(IPlayerState.PlayerState.Walking);
@@ -307,10 +287,10 @@ public class Player : NetworkBehaviour
         _stamina.DrainStamina();
 
         _jumping = true;
-        _currentJumpHeight = Mathf.Max(_minJumpHeight, _currentJumpHeight);
-        _currentJumpHeight = (_currentJumpHeight < _maxJumpHeight) ? _currentJumpHeight + Time.deltaTime * _jumpHeightScaler : _maxJumpHeight;
+        _currentJumpHeight = Mathf.Max(_stats.MinJumpHeight, _currentJumpHeight);
+        _currentJumpHeight = (_currentJumpHeight < _stats.MaxJumpHeight) ? _currentJumpHeight + Time.deltaTime * _stats.JumpHeightScaler : _stats.MaxJumpHeight;
 
-        if(_currentJumpHeight >= _maxJumpHeight)
+        if(_currentJumpHeight >= _stats.MaxJumpHeight)
         {
             _jumping = false;
             SetState(IPlayerState.PlayerState.Falling);
@@ -321,7 +301,7 @@ public class Player : NetworkBehaviour
     {
         //_currentJumpHeight = Mathf.Min(-_maxJumpHeight, _currentJumpHeight);
         //_currentJumpHeight = (_currentJumpHeight > -_maxJumpHeight) ? _currentJumpHeight - Time.deltaTime * _jumpHeightScaler : -_maxJumpHeight;
-        _currentJumpHeight -= Time.deltaTime * _jumpHeightScaler;
+        _currentJumpHeight -= Time.deltaTime * _stats.JumpHeightScaler;
 
         if (IsGrounded())
         {
@@ -374,11 +354,12 @@ public class Player : NetworkBehaviour
             {
                 Debug.Log("[Climbing] Going forward");
                 move += transform.forward;
+                move += climbUp;
             }
 
             if (move != Vector3.zero)
             {
-                Vector3 climbVector = move.normalized * _climbSpeed * Time.deltaTime;
+                Vector3 climbVector = move.normalized * _stats.ClimbSpeed * Time.deltaTime;
                 _controller?.Move(climbVector);
 
                 Debug.DrawRay(transform.position, climbVector, Color.cyan);
@@ -419,7 +400,7 @@ public class Player : NetworkBehaviour
         wallNormal = Vector3.zero;
 
         Vector3 rayOrigin = transform.position + Vector3.up;
-        Vector3 bottomRayOrigin = transform.position - Vector3.up * 4f;
+        Vector3 bottomRayOrigin = transform.position - Vector3.up /** 8f*/;
         Vector3 rayDirection = transform.forward;
 
         Debug.DrawRay(rayOrigin, rayDirection * ClimbCheckDistance, Color.blue);
@@ -441,8 +422,6 @@ public class Player : NetworkBehaviour
             Debug.DrawRay(hit.point, climbDirection, Color.green);
 
             _top = true;
-
-            return true;
         }
 
         // Bottom of player - runs if top is false so player can still climb up and get over the hill
@@ -459,7 +438,10 @@ public class Player : NetworkBehaviour
             Debug.DrawRay(hitBottom.point, climbDirection, Color.green);
 
             _bottom = true;
+        }
 
+        if(_top || _bottom)
+        {
             return true;
         }
 
@@ -480,18 +462,47 @@ public class Player : NetworkBehaviour
         return false;
     }
 
+    private void CheckIfRunning(Vector3 dir)
+    {
+        if (dir.magnitude != 0)
+        {
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                _running = true;
+            }
+            else if (Input.GetKeyUp(KeyCode.LeftShift))
+            {
+                _running = false;
+            }
+        }
+    }
+
     public void BouncePlayer()
     {
         _anim.SetBool("isJumping", true);
 
         _jumping = true;
-        _currentJumpHeight = Mathf.Max(_minJumpHeight, _currentJumpHeight);
-        _currentJumpHeight = (_currentJumpHeight < _maxBounceHeight) ? _currentJumpHeight + Time.deltaTime * _bounceHeightScaler : _maxBounceHeight;
+        _currentJumpHeight = Mathf.Max(_stats.MinJumpHeight, _currentJumpHeight);
+        _currentJumpHeight = (_currentJumpHeight < _stats.MaxBounceHeight) ? _currentJumpHeight + Time.deltaTime * _stats.BounceHeightScaler : _stats.MaxBounceHeight;
 
-        if (_currentJumpHeight >= _maxBounceHeight)
+        if (_currentJumpHeight >= _stats.MaxBounceHeight)
         {
             _jumping = false;
             SetState(IPlayerState.PlayerState.Falling);
+        }
+    }
+
+    #region - KNOCKBACK -
+    private void ApplyKnockback()
+    {
+        if (_isKnockback)
+        {
+            if (IsGrounded())
+            {
+                _isKnockback = false;
+                _knockbackVelocity = Vector3.zero;
+            }
+            _controller.Move(_knockbackVelocity * Time.deltaTime);
         }
     }
 
@@ -522,6 +533,7 @@ public class Player : NetworkBehaviour
         //_knockbackVelocity = Vector3.zero;
         //_isKnockback = false;
     }
+    #endregion
 }
 
 [System.Serializable]
