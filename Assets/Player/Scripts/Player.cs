@@ -466,7 +466,7 @@ public class Player : NetworkBehaviour
     {
         if (dir.magnitude != 0)
         {
-            if (Input.GetKey(KeyCode.LeftShift))
+            if (Input.GetKey(KeyCode.LeftShift) && _stamina.CurrentStamina > _stamina.MinStamina)
             {
                 _running = true;
             }
@@ -592,6 +592,11 @@ public class Stamina : IStamina
 
     public void ReplenishStamina()
     {
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            return;
+        }
+
         _currentStamina = Mathf.Min(_maxStamina, _currentStamina + Time.deltaTime * _replenishScaler);
         OnStaminaChanged?.Invoke(_currentStamina);
     }
