@@ -27,6 +27,7 @@ public class PlayerStats : ScriptableObject
     [Header("Layer Masks")]
     [SerializeField] private LayerMask _groundLayer;
     [SerializeField] private LayerMask _wallLayer;
+    [SerializeField] private LayerMask _playerLayer;
 
     // Movement
     public float MinSpeed => _minSpeed;
@@ -52,5 +53,6 @@ public class PlayerStats : ScriptableObject
     // Layer Masks
     public LayerMask GroundLayer => _groundLayer;
     public LayerMask WallLayer => _wallLayer;
+    public LayerMask PlayerLayer => _playerLayer;
 
 }

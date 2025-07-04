@@ -102,6 +102,7 @@ public class Player : NetworkBehaviour
         StateUpdate();
         RotateUpdate();
         MovementUpdate();
+        PushPlayer();
     }
 
     /// <summary>
@@ -492,6 +493,49 @@ public class Player : NetworkBehaviour
         }
     }
 
+    private float _rayDistance = 5f; // How far you want to check for hits
+    public void PushPlayer()
+    {
+        if (!isLocalPlayer) return;
+
+        if (Input.GetMouseButton(1))
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            Debug.DrawRay(ray.origin, ray.direction * _rayDistance, Color.red);
+            if (Physics.Raycast(ray, out RaycastHit hit, _rayDistance, _stats.PlayerLayer))
+            {
+                GameObject hitObject = hit.collider.gameObject;
+                if (hitObject.CompareTag("Player") && hitObject != gameObject)
+                {
+                    Debug.Log("[Client] Requesting push on: " + hitObject.name);
+                    NetworkIdentity hitIdentity = hitObject.GetComponent<NetworkIdentity>();
+                    if (hitIdentity != null)
+                    {
+                        CmdPunch(hitIdentity);
+                    }
+                }
+            }
+        }
+    }
+
+    [Command]
+    private void CmdPunch(NetworkIdentity hitPlayer)
+    {
+        var knockback = hitPlayer.GetComponent<Player>();
+        if (knockback != null)
+        {
+            Debug.Log("[Client] Pushing");
+            Vector3 direction = (hitPlayer.transform.position - transform.position).normalized;
+            knockback.RpcApplyKnockback(direction, 10f, 0.5f, 0.5f); // direction, force, duration, upward
+        }
+    }
+
+    [TargetRpc]
+    public void RpcApplyKnockback(Vector3 direction, float force, float duration, float upwardForce)
+    {
+        Knockback(direction, force, duration, upwardForce);
+    }
+
     #region - KNOCKBACK -
     private void ApplyKnockback()
     {
@@ -506,19 +550,19 @@ public class Player : NetworkBehaviour
         }
     }
 
-    private bool _isKnockback;
-    private Vector3 _knockbackVelocity;
-    public void Knockback(Vector3 direction, float force, float duration, float upwardForce = 0f)
+     private bool _isKnockback;
+     private Vector3 _knockbackVelocity;
+    public void Knockback(Vector3 direction, float force, float duration, float upwardForce = 0f, bool stopKnockback = false)
     {
         if (_isKnockback)
         {
             return;
         }
         Vector3 finalDirection = direction.normalized + Vector3.up * upwardForce;
-        StartCoroutine(DoKnockback(finalDirection, force, duration));
+        StartCoroutine(DoKnockback(finalDirection, force, duration, stopKnockback));
     }
 
-    private IEnumerator DoKnockback(Vector3 direction, float force, float duration)
+    private IEnumerator DoKnockback(Vector3 direction, float force, float duration, bool stopKnockback = false)
     {
         _isKnockback = true;
         float timer = 0f;
@@ -530,8 +574,11 @@ public class Player : NetworkBehaviour
             yield return null;
         }
 
-        //_knockbackVelocity = Vector3.zero;
-        //_isKnockback = false;
+        if (stopKnockback)
+        {
+            _knockbackVelocity = Vector3.zero;
+            _isKnockback = false;
+        }
     }
     #endregion
 }
