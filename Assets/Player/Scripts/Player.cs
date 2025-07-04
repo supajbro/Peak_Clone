@@ -451,7 +451,7 @@ public class Player : NetworkBehaviour
 
     public bool IsGrounded()
     {
-        const float GroundCheckDistance = 1.5f;
+        const float GroundCheckDistance = 1.1f;
         Debug.DrawRay(transform.position, Vector3.down * GroundCheckDistance, Color.red);
 
         RaycastHit hit;
