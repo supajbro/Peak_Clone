@@ -71,12 +71,25 @@ public class Player : NetworkBehaviour
     [SerializeField] private LayerMask _groundLayer;
     [SerializeField] private LayerMask _wallLayer;
 
+    [Header("Ground Check Rays")]
+    [SerializeField] private Transform _middle;
+    [SerializeField] private Transform _middleBack;
+    [SerializeField] private Transform _middleFront;
+    [SerializeField] private Transform _middleRight;
+    [SerializeField] private Transform _middleLeft;
+    [SerializeField] private Transform _backRight;
+    [SerializeField] private Transform _backLeft;
+    [SerializeField] private Transform _frontRight;
+    [SerializeField] private Transform _frontLeft;
+
     private void Start()
     {
         if (!isLocalPlayer)
         {
             return;
         }
+
+        gameObject.name = "Player: " + UnityEngine.Random.Range(10, 1000).ToString();
 
         _controller = GetComponent<CharacterController>();
 
@@ -397,6 +410,11 @@ public class Player : NetworkBehaviour
     bool _bottom = false;
     public bool ClimbDirection(out Vector3 climbDirection, out Vector3 wallNormal)
     {
+        if (_isKnockback)
+        {
+            _isKnockback = false;
+        }
+
         climbDirection = Vector3.zero;
         wallNormal = Vector3.zero;
 
@@ -450,13 +468,73 @@ public class Player : NetworkBehaviour
         return false;
     }
 
+    //public bool IsGrounded()
+    //{
+    //    const float GroundCheckDistance = 1.1f;
+    //    Debug.DrawRay(transform.position, Vector3.down * GroundCheckDistance, Color.red);
+
+    //    RaycastHit hit;
+    //    if (Physics.Raycast(transform.position, Vector3.down, out hit, GroundCheckDistance, _groundLayer))
+    //    {
+    //        return true;
+    //    }
+    //    return false;
+    //}
+
     public bool IsGrounded()
     {
-        const float GroundCheckDistance = 1.1f;
-        Debug.DrawRay(transform.position, Vector3.down * GroundCheckDistance, Color.red);
+        const float GroundCheckDistance = .5f;
+        Debug.DrawRay(_middle.position, Vector3.down * GroundCheckDistance, Color.red);
+        Debug.DrawRay(_middleBack.position, Vector3.down * GroundCheckDistance, Color.red);
+        Debug.DrawRay(_middleFront.position, Vector3.down * GroundCheckDistance, Color.red);
+        Debug.DrawRay(_middleLeft.position, Vector3.down * GroundCheckDistance, Color.red);
+        Debug.DrawRay(_middleRight.position, Vector3.down * GroundCheckDistance, Color.red);
+        Debug.DrawRay(_backLeft.position, Vector3.down * GroundCheckDistance, Color.red);
+        Debug.DrawRay(_backRight.position, Vector3.down * GroundCheckDistance, Color.red);
+        Debug.DrawRay(_frontLeft.position, Vector3.down * GroundCheckDistance, Color.red);
+        Debug.DrawRay(_frontRight.position, Vector3.down * GroundCheckDistance, Color.red);
 
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position, Vector3.down, out hit, GroundCheckDistance, _groundLayer))
+        if (Physics.Raycast(_middle.position, Vector3.down, out RaycastHit middle, GroundCheckDistance, _groundLayer))
+        {
+            return true;
+        }
+
+        if (Physics.Raycast(_middleBack.position, Vector3.down, out RaycastHit middleBack, GroundCheckDistance, _groundLayer))
+        {
+            return true;
+        }
+
+        if (Physics.Raycast(_middleFront.position, Vector3.down, out RaycastHit middleFront, GroundCheckDistance, _groundLayer))
+        {
+            return true;
+        }
+
+        if (Physics.Raycast(_middleLeft.position, Vector3.down, out RaycastHit middleLeft, GroundCheckDistance, _groundLayer))
+        {
+            return true;
+        }
+
+        if (Physics.Raycast(_middleRight.position, Vector3.down, out RaycastHit middleRight, GroundCheckDistance, _groundLayer))
+        {
+            return true;
+        }
+
+        if (Physics.Raycast(_backLeft.position, Vector3.down, out RaycastHit backLeft, GroundCheckDistance, _groundLayer))
+        {
+            return true;
+        }
+
+        if (Physics.Raycast(_backRight.position, Vector3.down, out RaycastHit backRight, GroundCheckDistance, _groundLayer))
+        {
+            return true;
+        }
+
+        if (Physics.Raycast(_frontLeft.position, Vector3.down, out RaycastHit frontLeft, GroundCheckDistance, _groundLayer))
+        {
+            return true;
+        }
+
+        if (Physics.Raycast(_frontRight.position, Vector3.down, out RaycastHit frontRight, GroundCheckDistance, _groundLayer))
         {
             return true;
         }
@@ -496,7 +574,7 @@ public class Player : NetworkBehaviour
     private float _rayDistance = 5f; // How far you want to check for hits
     public void PushPlayer()
     {
-        if (!isLocalPlayer) return;
+        //if (!isLocalPlayer) return;
 
         if (Input.GetMouseButton(1))
         {
@@ -526,7 +604,8 @@ public class Player : NetworkBehaviour
         {
             Debug.Log("[Client] Pushing");
             Vector3 direction = (hitPlayer.transform.position - transform.position).normalized;
-            knockback.RpcApplyKnockback(direction, 10f, 0.5f, 0.5f); // direction, force, duration, upward
+            knockback.RpcApplyKnockback(direction, 10f, 0.25f, 1f); // direction, force, duration, upward
+            //knockback.SetState(IPlayerState.PlayerState.Jumping);
         }
     }
 
@@ -541,23 +620,26 @@ public class Player : NetworkBehaviour
     {
         if (_isKnockback)
         {
-            if (IsGrounded())
+            if (IsGrounded() && _stopKnockback)
             {
                 _isKnockback = false;
                 _knockbackVelocity = Vector3.zero;
             }
+            Debug.Log("[Knockback] Started knockback: " + gameObject.name);
             _controller.Move(_knockbackVelocity * Time.deltaTime);
         }
     }
 
-     private bool _isKnockback;
-     private Vector3 _knockbackVelocity;
+    private bool _isKnockback;
+    private bool _stopKnockback = false;
+    private Vector3 _knockbackVelocity;
     public void Knockback(Vector3 direction, float force, float duration, float upwardForce = 0f, bool stopKnockback = false)
     {
         if (_isKnockback)
         {
             return;
         }
+        _stopKnockback = false;
         Vector3 finalDirection = direction.normalized + Vector3.up * upwardForce;
         StartCoroutine(DoKnockback(finalDirection, force, duration, stopKnockback));
     }
@@ -573,6 +655,8 @@ public class Player : NetworkBehaviour
             timer += Time.deltaTime;
             yield return null;
         }
+
+        _stopKnockback = true;
 
         if (stopKnockback)
         {
