@@ -195,13 +195,21 @@ public class Player : NetworkBehaviour
                 SetState(IPlayerState.PlayerState.Falling);
             }
 
+            Vector3 movement = new Vector3(h * .25f, _currentJumpHeight, v * .25f);
+
+            // If movement starts in air, make them move
+            if ((_currentState == IPlayerState.PlayerState.Jumping || _currentState == IPlayerState.PlayerState.Falling)
+                && movement.magnitude != 0f)
+            {
+                _currentSpeed = (_currentSpeed < _stats.MaxSpeed) ? _currentSpeed + Time.deltaTime * _stats.SpeedScaler : _stats.MaxSpeed;
+            }
+
             // Move player
-            Vector3 playerMovement = new Vector3(h * .25f, _currentJumpHeight, v * .25f);
-            Vector3 move = (facingDirection * playerMovement) * _currentSpeed * Time.deltaTime;
+            Vector3 move = (facingDirection * movement) * _currentSpeed * Time.deltaTime;
             move.y = _currentJumpHeight * Time.deltaTime;
             _controller?.Move(move);
 
-            CheckIfRunning(playerMovement);
+            CheckIfRunning(movement);
 
             if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
             {
@@ -209,7 +217,7 @@ public class Player : NetworkBehaviour
             }
             else if (IsGrounded() && _currentJumpHeight == 0)
             {
-                if (playerMovement.magnitude == 0)
+                if (movement.magnitude == 0)
                 {
                     SetState(IPlayerState.PlayerState.Idle);
                     _running = false;
@@ -313,8 +321,6 @@ public class Player : NetworkBehaviour
 
     public void FallingUpdate()
     {
-        //_currentJumpHeight = Mathf.Min(-_maxJumpHeight, _currentJumpHeight);
-        //_currentJumpHeight = (_currentJumpHeight > -_maxJumpHeight) ? _currentJumpHeight - Time.deltaTime * _jumpHeightScaler : -_maxJumpHeight;
         _currentJumpHeight -= Time.deltaTime * _stats.JumpHeightScaler;
 
         if (IsGrounded())
@@ -383,17 +389,9 @@ public class Player : NetworkBehaviour
 
     const float ClimbCheckDistance = 1f;
     const float ClimbRadius = .5f;
-    //public bool CanClimb()
-    //{
-    //    if (Physics.Raycast(transform.position, transform.forward, ClimbCheckDistance, _wallLayer))
-    //    {
-    //        return true;
-    //    }
-    //    return false;
-    //}
     public bool CanClimb()
     {
-        Vector3 origin = transform.position + Vector3.up; // adjust height if needed
+        Vector3 origin = transform.position + Vector3.up;
         Vector3 direction = transform.forward;
         return Physics.SphereCast(origin, ClimbRadius, direction, out RaycastHit hit, ClimbCheckDistance, _wallLayer);
     }
@@ -419,7 +417,7 @@ public class Player : NetworkBehaviour
         wallNormal = Vector3.zero;
 
         Vector3 rayOrigin = transform.position + Vector3.up;
-        Vector3 bottomRayOrigin = transform.position - Vector3.up /** 8f*/;
+        Vector3 bottomRayOrigin = transform.position - Vector3.up;
         Vector3 rayDirection = transform.forward;
 
         Debug.DrawRay(rayOrigin, rayDirection * ClimbCheckDistance, Color.blue);
