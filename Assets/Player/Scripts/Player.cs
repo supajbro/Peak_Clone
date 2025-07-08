@@ -1,6 +1,7 @@
 using Mirror;
 using System;
 using System.Collections;
+using Unity.Burst.CompilerServices;
 using UnityEngine;
 
 public class Player : NetworkBehaviour
@@ -211,6 +212,14 @@ public class Player : NetworkBehaviour
                 && movement.magnitude != 0f)
             {
                 _currentSpeed = (_currentSpeed < _stats.MaxSpeed) ? _currentSpeed + Time.deltaTime * _stats.SpeedScaler : _stats.MaxSpeed;
+            }
+
+            // Add upwards movement when on a moving platform
+            if (_currentPlatform != null)
+            {
+                Vector3 platformDelta = _currentPlatform.position - _lastPlatformPosition;
+                _controller?.Move(platformDelta);
+                _lastPlatformPosition = _currentPlatform.position;
             }
 
             // Move player
@@ -475,18 +484,24 @@ public class Player : NetworkBehaviour
         return false;
     }
 
-    //public bool IsGrounded()
-    //{
-    //    const float GroundCheckDistance = 1.1f;
-    //    Debug.DrawRay(transform.position, Vector3.down * GroundCheckDistance, Color.red);
+    private Transform _currentPlatform;
+    private Vector3 _lastPlatformPosition;
+    private void OnTriggerEnter(Collider other)
+    {
+        if(other.gameObject.tag == "MovingPlatform")
+        {
+            _currentPlatform = other.gameObject.transform;
+            _lastPlatformPosition = _currentPlatform.position;
+        }
+    }
 
-    //    RaycastHit hit;
-    //    if (Physics.Raycast(transform.position, Vector3.down, out hit, GroundCheckDistance, _groundLayer))
-    //    {
-    //        return true;
-    //    }
-    //    return false;
-    //}
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.tag == "MovingPlatform")
+        {
+            _currentPlatform = null;
+        }
+    }
 
     public bool IsGrounded()
     {

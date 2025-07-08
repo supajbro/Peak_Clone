@@ -75724,6 +75724,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2931662492423559709, guid: 23a39a585ecb06a4bb4cc96e90a742f1, type: 3}
+      propertyPath: m_TagString
+      value: MovingPlatform
+      objectReference: {fileID: 0}
     - target: {fileID: 6835421010841631586, guid: 23a39a585ecb06a4bb4cc96e90a742f1, type: 3}
       propertyPath: m_Name
       value: MovingPlatform
