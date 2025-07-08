@@ -63,6 +63,9 @@ public class Player : NetworkBehaviour
     [SerializeField] private bool _jumping = false;
     [SerializeField] private float _currentJumpHeight = 0f;
 
+    [Header("Koyote Time")]
+    [SerializeField] private float _currentKoyoteTime = 0f;
+
     [Header("Stamina")]
     [SerializeField] private Stamina _stamina;
     public Stamina MyStamina => _stamina;
@@ -193,8 +196,14 @@ public class Player : NetworkBehaviour
             if (!IsGrounded() && !_jumping)
             {
                 SetState(IPlayerState.PlayerState.Falling);
+                _currentKoyoteTime += Time.deltaTime;
+            }
+            else
+            {
+                _currentKoyoteTime = 0f;
             }
 
+            // Movement data based on input
             Vector3 movement = new Vector3(h * .25f, _currentJumpHeight, v * .25f);
 
             // If movement starts in air, make them move
@@ -211,7 +220,7 @@ public class Player : NetworkBehaviour
 
             CheckIfRunning(movement);
 
-            if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
+            if (Input.GetKeyDown(KeyCode.Space) && (IsGrounded() || _currentKoyoteTime < _stats.MaxKoyoteTime))
             {
                 SetState(IPlayerState.PlayerState.Jumping);
             }
@@ -572,10 +581,11 @@ public class Player : NetworkBehaviour
     private float _rayDistance = 5f; // How far you want to check for hits
     public void PushPlayer()
     {
-        //if (!isLocalPlayer) return;
+        if (!isLocalPlayer) return;
 
-        if (Input.GetMouseButton(1))
+        if (Input.GetMouseButtonDown(1))
         {
+            _anim.SetTrigger("interact");
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             Debug.DrawRay(ray.origin, ray.direction * _rayDistance, Color.red);
             if (Physics.Raycast(ray, out RaycastHit hit, _rayDistance, _stats.PlayerLayer))
@@ -598,6 +608,7 @@ public class Player : NetworkBehaviour
     private void CmdPunch(NetworkIdentity hitPlayer)
     {
         var knockback = hitPlayer.GetComponent<Player>();
+        RpcPlayPunch();
         if (knockback != null)
         {
             Debug.Log("[Client] Pushing");
@@ -611,6 +622,13 @@ public class Player : NetworkBehaviour
     public void RpcApplyKnockback(Vector3 direction, float force, float duration, float upwardForce)
     {
         Knockback(direction, force, duration, upwardForce);
+        _anim.SetTrigger("interact");
+    }
+
+    [ClientRpc]
+    private void RpcPlayPunch()
+    {
+        _anim.SetTrigger("interact");
     }
 
     #region - KNOCKBACK -

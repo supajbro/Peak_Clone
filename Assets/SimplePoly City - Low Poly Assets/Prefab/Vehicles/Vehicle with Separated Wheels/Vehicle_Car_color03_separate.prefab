@@ -559,7 +559,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   _currentSpeed: -1
-  _normalSpeed: 30
+  _normalSpeed: 50
   _turningSpeed: 2
   _leftPosition: {fileID: 7131028974801168884}
   _middlePosition: {fileID: 555196248101627904}

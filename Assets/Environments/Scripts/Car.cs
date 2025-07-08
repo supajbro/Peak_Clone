@@ -26,6 +26,9 @@ public class Car : NetworkBehaviour
     private int _index = -1;
     private bool _active = false;
 
+    [SyncVar] private Vector3 _syncedPosition;
+    [SyncVar] private Quaternion _syncedRotation;
+
     private void Start()
     {
         ResetPath();
@@ -33,7 +36,18 @@ public class Car : NetworkBehaviour
 
     private void Update()
     {
-        CarUpdate();
+        if (isServer)
+        {
+            CarUpdate();
+            _syncedPosition = transform.position;
+            _syncedRotation = transform.rotation;
+        }
+        else
+        {
+            // Smoothly interpolate toward the synced values
+            transform.position = Vector3.Lerp(transform.position, _syncedPosition, Time.deltaTime * 10f);
+            transform.rotation = Quaternion.Lerp(transform.rotation, _syncedRotation, Time.deltaTime * 10f);
+        }
         HitPlayer();
     }
 

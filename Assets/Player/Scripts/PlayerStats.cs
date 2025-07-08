@@ -24,6 +24,9 @@ public class PlayerStats : ScriptableObject
     [SerializeField] private float _sensitivity = 10f;
     [SerializeField, Range(0f, 1f)] private float _smoothFactor = 0.5f;
 
+    [Header("Koyote Time")]
+    [SerializeField, Tooltip("How long player can be off the ground and still jump")] private float _maxKoyoteTime = 0.5f;
+
     [Header("Layer Masks")]
     [SerializeField] private LayerMask _groundLayer;
     [SerializeField] private LayerMask _wallLayer;
@@ -49,6 +52,9 @@ public class PlayerStats : ScriptableObject
     // Rotation
     public float Sensitivity => _sensitivity;
     public float SmoothFactor => _smoothFactor;
+
+    // Koyote Time
+    public float MaxKoyoteTime => _maxKoyoteTime;
 
     // Layer Masks
     public LayerMask GroundLayer => _groundLayer;
