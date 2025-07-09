@@ -21,7 +21,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Arms
-  m_Shader: {fileID: -6465566751694194690, guid: 70887e622b3a3b84f9c1cb03fa999d40, type: 3}
+  m_Shader: {fileID: 4800000, guid: 313fcf3aebc04cf4ab4f8c5f2850be7f, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -36,6 +36,10 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 2800000, guid: f758152240d5ffc4ba46f0a596ffd6f3, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BumpMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -96,20 +100,31 @@ Material:
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
+    - _OutlineWidth: 0
     - _Parallax: 0.02
     - _QueueControl: 0
     - _QueueOffset: 0
+    - _RimStep: 0.65
+    - _RimStepSmooth: 0.4
+    - _ShadowStep: 0.5
+    - _ShadowStepSmooth: 0.04
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
+    - _SpecularStep: 0
+    - _SpecularStepSmooth: 0.05
     - _SrcBlend: 1
     - _Tolerance: 0.5
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
     - _BTarget: {r: 1, g: 0.25, b: 0.29999995, a: 1}
+    - _BaseColor: {r: 0.7372549, g: 0.7372549, b: 0.7372549, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _GTarget: {r: 0.7411765, g: 0.5529412, b: 0.8666667, a: 1}
+    - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
     - _RTarget: {r: 1, g: 0, b: 0.06666667, a: 1}
+    - _RimColor: {r: 1, g: 1, b: 1, a: 1}
+    - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

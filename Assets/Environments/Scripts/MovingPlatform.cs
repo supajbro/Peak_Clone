@@ -11,7 +11,9 @@ public class MovingPlatform : NetworkBehaviour
     [SerializeField] private float _speed = 10f;
 
     private int _index = -1;
-    private bool _active = false;
+    [SerializeField] private bool _active = false;
+    [SerializeField] private EnableNextSkyscraper _skyscraper;
+    [SerializeField] private GameObject _mesh;
 
     [SyncVar] private Vector3 _syncedPosition;
 
@@ -22,10 +24,7 @@ public class MovingPlatform : NetworkBehaviour
 
     private void OnTriggerEnter(Collider collision)
     {
-        //if (collision.gameObject.tag == "Player")
-        {
-            _active = true;
-        }
+        _active = true;
     }
 
     private void Update()
@@ -43,6 +42,13 @@ public class MovingPlatform : NetworkBehaviour
 
     private void Move()
     {
+        if (!_skyscraper.IsNextActive)
+        {
+            _mesh.SetActive(false);
+            return;
+        }
+        _mesh.SetActive(true);
+
         if (!_active)
         {
             return;

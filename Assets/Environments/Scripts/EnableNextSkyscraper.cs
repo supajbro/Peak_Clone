@@ -6,6 +6,7 @@ public class EnableNextSkyscraper : NetworkBehaviour
     [SerializeField] private GameObject _next;
     [SyncVar(hook = nameof(OnNextSkyscraperStateChanged))]
     private bool _isNextActive = false;
+    public bool IsNextActive => _isNextActive;
 
     private void OnTriggerEnter(Collider other)
     {

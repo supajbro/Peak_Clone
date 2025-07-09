@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Shoes
-  m_Shader: {fileID: 4800000, guid: fab66f61b1fd9374692bd0f32eecba0c, type: 3}
+  m_Shader: {fileID: 4800000, guid: 313fcf3aebc04cf4ab4f8c5f2850be7f, type: 3}
   m_Parent: {fileID: 2100000, guid: fe20f5a23e1ad4440a508e4a5c0fae8b, type: 2}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -24,6 +24,8 @@ Material:
     serializedVersion: 3
     m_TexEnvs: []
     m_Ints: []
-    m_Floats: []
-    m_Colors: []
+    m_Floats:
+    - _SpecularStep: 0
+    m_Colors:
+    - _BaseColor: {r: 0.7372549, g: 0.7372549, b: 0.7372549, a: 1}
   m_BuildTextureStacks: []
