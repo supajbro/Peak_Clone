@@ -20,7 +20,7 @@ MonoBehaviour:
   _jumpHeightScaler: 50
   _bounceHeightScaler: 1000
   _maxBounceHeight: 250
-  _climbSpeed: 3
+  _climbSpeed: 300
   _minImpactHeight: 5
   _maxImpactHeight: 15
   _impactScaler: 25
