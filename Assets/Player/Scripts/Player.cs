@@ -303,7 +303,7 @@ public class Player : NetworkBehaviour, IPlayerState
         _anim.SetBool("isClimbing", false);
         _stamina.ReplenishStamina();
 
-        _currentSpeed = 0f;
+        _currentSpeed = (_currentSpeed > 0f) ? _currentSpeed - Time.deltaTime * _stats.SpeedScaler : 0f;
         _currentJumpHeight = 0f;
 
         if (!IsGrounded())
@@ -369,7 +369,6 @@ public class Player : NetworkBehaviour, IPlayerState
 
         if (IsGrounded())
         {
-            Debug.Log("Current jump height: " + _currentJumpHeight);
             SetState(_currentJumpHeight < _stats.FallPower ? IPlayerState.PlayerState.BigImpact : IPlayerState.PlayerState.Idle);
             //_currentJumpHeight = 0f;
         }
