@@ -21,6 +21,10 @@ MonoBehaviour:
   _bounceHeightScaler: 1000
   _maxBounceHeight: 250
   _climbSpeed: 3
+  _minImpactHeight: 5
+  _maxImpactHeight: 15
+  _impactScaler: 25
+  _fallPower: -50
   _sensitivity: 10
   _smoothFactor: 0.5
   _maxKoyoteTime: 0.25

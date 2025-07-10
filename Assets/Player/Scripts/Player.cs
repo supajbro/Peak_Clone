@@ -4,7 +4,7 @@ using System.Collections;
 using Unity.Burst.CompilerServices;
 using UnityEngine;
 
-public class Player : NetworkBehaviour
+public class Player : NetworkBehaviour, IPlayerState
 {
     #region - STATES -
     [Header("States")]
@@ -63,6 +63,13 @@ public class Player : NetworkBehaviour
     [Header("Jumping")]
     [SerializeField] private bool _jumping = false;
     [SerializeField] private float _currentJumpHeight = 0f;
+
+    [Header("Impact")]
+    [SerializeField] private bool _impact = false;
+    [SerializeField] private float _currentImpactHeight = 0f;
+    [SerializeField] private float _flipDuration = 1f;
+    [SerializeField] private float _flipTimer = 0f;
+    int _rotationDegree = 0;
 
     [Header("Koyote Time")]
     [SerializeField] private float _currentKoyoteTime = 0f;
@@ -157,6 +164,10 @@ public class Player : NetworkBehaviour
             case IPlayerState.PlayerState.Climbing:
                 ClimbingUpdate();
                 break;
+
+            case IPlayerState.PlayerState.BigImpact:
+                BigImpactUpdate();
+                break;
         }
     }
 
@@ -175,6 +186,16 @@ public class Player : NetworkBehaviour
 
         ApplyKnockback();
 
+        // Don't run regular movement when player has hit the ground hard
+        if (_impact)
+        {
+            return;
+        }
+
+        // Rotate player to camera rot
+        Quaternion facingDirection = Quaternion.Euler(0, _cam.transform.rotation.eulerAngles.y, 0);
+        transform.rotation = facingDirection;
+
         if (CanClimb() && Input.GetMouseButton(0) && _stamina.CurrentStamina > _stamina.MinStamina)
         {
             SetState(IPlayerState.PlayerState.Climbing);
@@ -188,62 +209,61 @@ public class Player : NetworkBehaviour
             SetState(IPlayerState.PlayerState.Falling);
         }
 
-        // Rotate player to camera rot
-        Quaternion facingDirection = Quaternion.Euler(0, _cam.transform.rotation.eulerAngles.y, 0);
-        transform.rotation = facingDirection;
-
-        if (_currentState != IPlayerState.PlayerState.Climbing)
+        // Don't run the rest of this block of code if climbing
+        if (_currentState == IPlayerState.PlayerState.Climbing)
         {
-            if (!IsGrounded() && !_jumping)
+            return;
+        }
+
+        if (!IsGrounded() && !_jumping)
+        {
+            SetState(IPlayerState.PlayerState.Falling);
+            _currentKoyoteTime += Time.deltaTime;
+        }
+        else
+        {
+            _currentKoyoteTime = 0f;
+        }
+
+        // Movement data based on input
+        Vector3 movement = new Vector3(h * .25f, _currentJumpHeight, v * .25f);
+
+        // If movement starts in air, make them move
+        if ((_currentState == IPlayerState.PlayerState.Jumping || _currentState == IPlayerState.PlayerState.Falling)
+            && movement.magnitude != 0f)
+        {
+            _currentSpeed = (_currentSpeed < _stats.MaxSpeed) ? _currentSpeed + Time.deltaTime * _stats.SpeedScaler : _stats.MaxSpeed;
+        }
+
+        // Add upwards movement when on a moving platform
+        if (_currentPlatform != null)
+        {
+            Vector3 platformDelta = _currentPlatform.position - _lastPlatformPosition;
+            _controller?.Move(platformDelta);
+            _lastPlatformPosition = _currentPlatform.position;
+        }
+
+        // Move player
+        Vector3 move = (facingDirection * movement) * _currentSpeed * Time.deltaTime;
+        move.y = _currentJumpHeight * Time.deltaTime;
+        _controller?.Move(move);
+
+        CheckIfRunning(movement);
+
+        if (Input.GetKeyDown(KeyCode.Space) && (IsGrounded() || _currentKoyoteTime < _stats.MaxKoyoteTime))
+        {
+            SetState(IPlayerState.PlayerState.Jumping);
+        }
+        else if (IsGrounded() && _currentJumpHeight == 0)
+        {
+            if (movement.magnitude == 0)
             {
-                SetState(IPlayerState.PlayerState.Falling);
-                _currentKoyoteTime += Time.deltaTime;
+                SetState(IPlayerState.PlayerState.Idle);
+                _running = false;
             }
             else
             {
-                _currentKoyoteTime = 0f;
-            }
-
-            // Movement data based on input
-            Vector3 movement = new Vector3(h * .25f, _currentJumpHeight, v * .25f);
-
-            // If movement starts in air, make them move
-            if ((_currentState == IPlayerState.PlayerState.Jumping || _currentState == IPlayerState.PlayerState.Falling)
-                && movement.magnitude != 0f)
-            {
-                _currentSpeed = (_currentSpeed < _stats.MaxSpeed) ? _currentSpeed + Time.deltaTime * _stats.SpeedScaler : _stats.MaxSpeed;
-            }
-
-            // Add upwards movement when on a moving platform
-            if (_currentPlatform != null)
-            {
-                Vector3 platformDelta = _currentPlatform.position - _lastPlatformPosition;
-                _controller?.Move(platformDelta);
-                _lastPlatformPosition = _currentPlatform.position;
-            }
-
-            // Move player
-            Vector3 move = (facingDirection * movement) * _currentSpeed * Time.deltaTime;
-            move.y = _currentJumpHeight * Time.deltaTime;
-            _controller?.Move(move);
-
-            CheckIfRunning(movement);
-
-            if (Input.GetKeyDown(KeyCode.Space) && (IsGrounded() || _currentKoyoteTime < _stats.MaxKoyoteTime))
-            {
-                SetState(IPlayerState.PlayerState.Jumping);
-            }
-            else if (IsGrounded() && _currentJumpHeight == 0)
-            {
-                if (movement.magnitude == 0)
-                {
-                    SetState(IPlayerState.PlayerState.Idle);
-                    _running = false;
-                }
-                else
-                {
-                    SetState((_running) ? IPlayerState.PlayerState.Running : IPlayerState.PlayerState.Walking);
-                }
+                SetState((_running) ? IPlayerState.PlayerState.Running : IPlayerState.PlayerState.Walking);
             }
         }
     }
@@ -254,6 +274,11 @@ public class Player : NetworkBehaviour
     private void RotateUpdate()
     {
         if (!isLocalPlayer)
+        {
+            return;
+        }
+
+        if (_impact)
         {
             return;
         }
@@ -279,6 +304,7 @@ public class Player : NetworkBehaviour
         _stamina.ReplenishStamina();
 
         _currentSpeed = 0f;
+        _currentJumpHeight = 0f;
 
         if (!IsGrounded())
         {
@@ -343,11 +369,13 @@ public class Player : NetworkBehaviour
 
         if (IsGrounded())
         {
-            _currentJumpHeight = 0f;
-            SetState(IPlayerState.PlayerState.Idle);
+            Debug.Log("Current jump height: " + _currentJumpHeight);
+            SetState(_currentJumpHeight < _stats.FallPower ? IPlayerState.PlayerState.BigImpact : IPlayerState.PlayerState.Idle);
+            //_currentJumpHeight = 0f;
         }
     }
 
+    #region - CLIMBING -
     public void ClimbingUpdate()
     {
         _anim.SetBool("isClimbing", true);
@@ -482,6 +510,45 @@ public class Player : NetworkBehaviour
 
         SetState((_running) ? IPlayerState.PlayerState.Running : IPlayerState.PlayerState.Walking);
         return false;
+    }
+    #endregion
+
+    public void BigImpactUpdate()
+    {
+        // Init of state
+        if (!_impact)
+        {
+            _flipTimer = 0f;
+            _rotationDegree = (UnityEngine.Random.value) < 0.5f ? 360 : -360;
+        }
+
+        _anim.SetBool("isJumping", true);
+
+        _currentJumpHeight = 0f;
+        _impact = true;
+
+        _currentImpactHeight = Mathf.Max(_stats.MinImpactHeight, _currentImpactHeight);
+        _currentImpactHeight = (_currentImpactHeight < _stats.MaxImpactHeight) ? _currentImpactHeight + Time.deltaTime * _stats.ImpactScaler : _stats.MaxImpactHeight;
+
+        // Move player upwards
+        Vector3 movement = new Vector3(0f, _currentImpactHeight, 0f);
+        Vector3 move = (movement) * _currentSpeed * Time.deltaTime;
+        move.y = _currentImpactHeight * Time.deltaTime;
+        _controller?.Move(move);
+
+        _flipTimer += Time.deltaTime;
+
+        // Rotate 360 degrees
+        float degreesPerSecond = _rotationDegree / _flipDuration;
+        float deltaRotation = degreesPerSecond * Time.deltaTime;
+        transform.Rotate(Vector3.right * deltaRotation, Space.Self);
+
+        if (_currentImpactHeight >= _stats.MaxImpactHeight && _flipTimer >= _flipDuration)
+        {
+            _currentImpactHeight = 0f;
+            _impact = false;
+            SetState(IPlayerState.PlayerState.Falling);
+        }
     }
 
     private Transform _currentPlatform;

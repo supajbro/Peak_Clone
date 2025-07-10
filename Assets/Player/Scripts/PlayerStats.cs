@@ -20,6 +20,12 @@ public class PlayerStats : ScriptableObject
     [Header("Climbing")]
     [SerializeField] private float _climbSpeed = 3f;
 
+    [Header("Impact")]
+    [SerializeField] private float _minImpactHeight = 5f;
+    [SerializeField] private float _maxImpactHeight = 10f;
+    [SerializeField] private float _impactScaler = 10f;
+    [SerializeField] private float _fallPower = -50f;
+
     [Header("Rotation")]
     [SerializeField] private float _sensitivity = 10f;
     [SerializeField, Range(0f, 1f)] private float _smoothFactor = 0.5f;
@@ -48,6 +54,12 @@ public class PlayerStats : ScriptableObject
 
     // Climbing
     public float ClimbSpeed => _climbSpeed;
+
+    // Impact
+    public float MinImpactHeight => _minImpactHeight;
+    public float MaxImpactHeight => _maxImpactHeight;
+    public float ImpactScaler => _impactScaler;
+    public float FallPower => _fallPower;
 
     // Rotation
     public float Sensitivity => _sensitivity;

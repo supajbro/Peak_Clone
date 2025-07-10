@@ -9,6 +9,7 @@ public interface IPlayerState
         Jumping,
         Falling,
         Climbing,
+        BigImpact,
         ENDOFSTATES
     }
 
@@ -23,4 +24,5 @@ public interface IPlayerState
     public void JumpingUpdate();
     public void FallingUpdate();
     public void ClimbingUpdate();
+    public void BigImpactUpdate();
 }
