@@ -91,15 +91,21 @@ MonoBehaviour:
   _stats: {fileID: 11400000, guid: 105aa8156f38c3f45a31c35627323547, type: 2}
   _ui: {fileID: 7771001418215781313, guid: a615be196de128640b731e8984c7a9a9, type: 3}
   _anim: {fileID: 151970179970813606}
-  _playerHead: {fileID: 5054160486620301942}
-  _playerEyes: {fileID: 7360006815232232908}
-  _playerBody: {fileID: 3645228109975067186}
+  _meshToHide:
+  - {fileID: 3235317356731867912}
+  - {fileID: 1905072248613993484}
+  - {fileID: 8699940348221421589}
+  - {fileID: 3541740504086522511}
   _camPrefab: {fileID: 5469460888547916821, guid: 7e79ec819b132d34f8cc923c4c447e67, type: 3}
   _camPosition: {fileID: 9199886159177958217}
   _currentSpeed: 0
   _running: 0
   _jumping: 0
   _currentJumpHeight: 0
+  _impact: 0
+  _currentImpactHeight: 0
+  _flipDuration: 1
+  _flipTimer: 0
   _currentKoyoteTime: 0
   _stamina:
     _currentStamina: 0
@@ -850,9 +856,19 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 151970179970813606}
   m_SourcePrefab: {fileID: 100100000, guid: 86e9b2833d2c69d44bed55f4503e5257, type: 3}
---- !u!1 &3645228109975067186 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 635547659545568360, guid: 86e9b2833d2c69d44bed55f4503e5257, type: 3}
+--- !u!137 &1905072248613993484 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 2321523695958950486, guid: 86e9b2833d2c69d44bed55f4503e5257, type: 3}
+  m_PrefabInstance: {fileID: 4199492980733541978}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &3235317356731867912 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 1630794972795428178, guid: 86e9b2833d2c69d44bed55f4503e5257, type: 3}
+  m_PrefabInstance: {fileID: 4199492980733541978}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &3541740504086522511 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -8403344563188607787, guid: 86e9b2833d2c69d44bed55f4503e5257, type: 3}
   m_PrefabInstance: {fileID: 4199492980733541978}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &3929093035212882699 stripped
@@ -886,13 +902,8 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 86e9b2833d2c69d44bed55f4503e5257, type: 3}
   m_PrefabInstance: {fileID: 4199492980733541978}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &5054160486620301942 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: -259972160606440404, guid: 86e9b2833d2c69d44bed55f4503e5257, type: 3}
-  m_PrefabInstance: {fileID: 4199492980733541978}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &7360006815232232908 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6657560127643677590, guid: 86e9b2833d2c69d44bed55f4503e5257, type: 3}
+--- !u!137 &8699940348221421589 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -4396642182433536433, guid: 86e9b2833d2c69d44bed55f4503e5257, type: 3}
   m_PrefabInstance: {fileID: 4199492980733541978}
   m_PrefabAsset: {fileID: 0}

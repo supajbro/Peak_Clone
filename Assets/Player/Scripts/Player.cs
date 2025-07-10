@@ -1,8 +1,9 @@
 using Mirror;
 using System;
 using System.Collections;
-using Unity.Burst.CompilerServices;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class Player : NetworkBehaviour, IPlayerState
 {
@@ -44,9 +45,7 @@ public class Player : NetworkBehaviour, IPlayerState
     [SerializeField] private PlayerStats _stats;
     [SerializeField] private PlayerUI _ui;
     [SerializeField] private Animator _anim;
-    [SerializeField] private GameObject _playerHead;
-    [SerializeField] private GameObject _playerEyes;
-    [SerializeField] private GameObject _playerBody;
+    [SerializeField] private List<SkinnedMeshRenderer> _meshToHide;
     private CharacterController _controller;
 
     [Header("Camera")]
@@ -116,9 +115,10 @@ public class Player : NetworkBehaviour, IPlayerState
         Cursor.visible = false;
 
         // Hide the head client side only so it doesn't clip with camera
-        _playerHead.SetActive(false);
-        _playerEyes.SetActive(false);
-        _playerBody.SetActive(false);
+        foreach (var mesh in _meshToHide)
+        {
+            mesh.shadowCastingMode = ShadowCastingMode.ShadowsOnly;
+        }
     }
 
     private void Update()
