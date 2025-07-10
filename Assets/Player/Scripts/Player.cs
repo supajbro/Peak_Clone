@@ -301,6 +301,7 @@ public class Player : NetworkBehaviour, IPlayerState
     {
         _anim.SetFloat("moveSpeed", 0f);
         _anim.SetBool("isClimbing", false);
+        _anim.SetBool("isFalling", false);
         _stamina.ReplenishStamina();
 
         _currentSpeed = (_currentSpeed > 0f) ? _currentSpeed - Time.deltaTime * _stats.SpeedScaler : 0f;
@@ -365,6 +366,7 @@ public class Player : NetworkBehaviour, IPlayerState
 
     public void FallingUpdate()
     {
+        _anim.SetBool("isFalling", true);
         _currentJumpHeight -= Time.deltaTime * _stats.JumpHeightScaler;
 
         if (IsGrounded())
@@ -377,6 +379,7 @@ public class Player : NetworkBehaviour, IPlayerState
     #region - CLIMBING -
     public void ClimbingUpdate()
     {
+        _anim.SetBool("isFalling", false);
         _anim.SetBool("isClimbing", true);
         _stamina.DrainStamina();
 
@@ -521,7 +524,7 @@ public class Player : NetworkBehaviour, IPlayerState
             _rotationDegree = (UnityEngine.Random.value) < 0.5f ? 360 : -360;
         }
 
-        _anim.SetBool("isJumping", true);
+        _anim.SetBool("isFalling", true);
 
         _currentJumpHeight = 0f;
         _impact = true;
