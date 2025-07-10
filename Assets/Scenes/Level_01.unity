@@ -28906,8 +28906,8 @@ MonoBehaviour:
   headlessStartMode: 0
   editorAutoStart: 0
   sendRate: 60
-  offlineScene: 
-  onlineScene: 
+  offlineScene: Assets/Scenes/Level_01.unity
+  onlineScene: Assets/Scenes/Level_01.unity
   offlineSceneLoadDelay: 0
   transport: {fileID: 785086749}
   networkAddress: localhost
