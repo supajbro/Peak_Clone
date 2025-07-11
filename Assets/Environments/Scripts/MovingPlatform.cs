@@ -12,6 +12,7 @@ public class MovingPlatform : NetworkBehaviour
 
     private int _index = -1;
     [SerializeField] private bool _active = false;
+    [SerializeField] private bool _activeOnStart = false;
     [SerializeField] private EnableNextSkyscraper _skyscraper;
     [SerializeField] private GameObject _mesh;
 
@@ -42,7 +43,7 @@ public class MovingPlatform : NetworkBehaviour
 
     private void Move()
     {
-        if (!_skyscraper.IsNextActive)
+        if (!_skyscraper.IsNextActive && !_activeOnStart)
         {
             _mesh.SetActive(false);
             return;

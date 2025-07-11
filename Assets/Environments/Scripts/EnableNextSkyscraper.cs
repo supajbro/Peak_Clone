@@ -8,6 +8,7 @@ public class EnableNextSkyscraper : NetworkBehaviour
     private bool _isNextActive = false;
     public bool IsNextActive => _isNextActive;
 
+
     private void OnTriggerEnter(Collider other)
     {
         if (!isServer) return;

@@ -68,7 +68,7 @@ public class Player : NetworkBehaviour, IPlayerState
     [SerializeField] private float _currentImpactHeight = 0f;
     [SerializeField] private float _flipDuration = 1f;
     [SerializeField] private float _flipTimer = 0f;
-    int _rotationDegree = 0;
+    private int _rotationDegree = 0;
 
     [Header("Koyote Time")]
     [SerializeField] private float _currentKoyoteTime = 0f;
@@ -215,6 +215,7 @@ public class Player : NetworkBehaviour, IPlayerState
             return;
         }
 
+        // Is player falling
         if (!IsGrounded() && !_jumping)
         {
             SetState(IPlayerState.PlayerState.Falling);
@@ -248,12 +249,25 @@ public class Player : NetworkBehaviour, IPlayerState
         move.y = _currentJumpHeight * Time.deltaTime;
         _controller?.Move(move);
 
-        CheckIfRunning(movement);
+        // Check if player has started running
+        if (movement.magnitude != 0)
+        {
+            if (Input.GetKey(KeyCode.LeftShift) && _stamina.CurrentStamina > _stamina.MinStamina)
+            {
+                _running = true;
+            }
+            else if (Input.GetKeyUp(KeyCode.LeftShift))
+            {
+                _running = false;
+            }
+        }
 
+        // Check if player has jumped
         if (Input.GetKeyDown(KeyCode.Space) && (IsGrounded() || _currentKoyoteTime < _stats.MaxKoyoteTime))
         {
             SetState(IPlayerState.PlayerState.Jumping);
         }
+        // Check if player is idle or moving
         else if (IsGrounded() && _currentJumpHeight == 0)
         {
             if (movement.magnitude == 0)
@@ -630,21 +644,6 @@ public class Player : NetworkBehaviour, IPlayerState
             return true;
         }
         return false;
-    }
-
-    private void CheckIfRunning(Vector3 dir)
-    {
-        if (dir.magnitude != 0)
-        {
-            if (Input.GetKey(KeyCode.LeftShift) && _stamina.CurrentStamina > _stamina.MinStamina)
-            {
-                _running = true;
-            }
-            else if (Input.GetKeyUp(KeyCode.LeftShift))
-            {
-                _running = false;
-            }
-        }
     }
 
     public void BouncePlayer()
