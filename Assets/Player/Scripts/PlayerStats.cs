@@ -33,6 +33,9 @@ public class PlayerStats : ScriptableObject
     [Header("Koyote Time")]
     [SerializeField, Tooltip("How long player can be off the ground and still jump")] private float _maxKoyoteTime = 0.5f;
 
+    [Header("Knockback")]
+    [Tooltip("How long after knockback user can start climbing again")] private float _preventKnockbackTimer = 0.5f;
+
     [Header("Layer Masks")]
     [SerializeField] private LayerMask _groundLayer;
     [SerializeField] private LayerMask _wallLayer;
@@ -67,6 +70,9 @@ public class PlayerStats : ScriptableObject
 
     // Koyote Time
     public float MaxKoyoteTime => _maxKoyoteTime;
+
+    // Knockback
+    public float PreventKnockbackTimer => _preventKnockbackTimer;
 
     // Layer Masks
     public LayerMask GroundLayer => _groundLayer;

@@ -73,6 +73,9 @@ public class Player : NetworkBehaviour, IPlayerState
     [Header("Koyote Time")]
     [SerializeField] private float _currentKoyoteTime = 0f;
 
+    [Header("Knockback")]
+    private float _knockbackTime = 0f;
+
     [Header("Stamina")]
     [SerializeField] private Stamina _stamina;
     public Stamina MyStamina => _stamina;
@@ -470,7 +473,8 @@ public class Player : NetworkBehaviour, IPlayerState
     bool _bottom = false;
     public bool ClimbDirection(out Vector3 climbDirection, out Vector3 wallNormal)
     {
-        if (_isKnockback)
+        // Stop knockback if climbing
+        if (_isKnockback && _knockbackTime >= _stats.PreventKnockbackTimer)
         {
             _isKnockback = false;
         }
@@ -726,6 +730,11 @@ public class Player : NetworkBehaviour, IPlayerState
             }
             Debug.Log("[Knockback] Started knockback: " + gameObject.name);
             _controller.Move(_knockbackVelocity * Time.deltaTime);
+            _knockbackTime += Time.deltaTime;
+        }
+        else
+        {
+            _knockbackTime = 0f;
         }
     }
 
