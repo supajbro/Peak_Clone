@@ -20,7 +20,6 @@ public class LevelManager : MonoBehaviour
     private void Start()
     {
         _manager = GameManager.Instance;
-        //_manager.OnAddPlayer += SpawnPlayerHead;
     }
 
     public Player FindHighestPlayer()
