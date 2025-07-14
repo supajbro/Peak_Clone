@@ -97,10 +97,15 @@ public class Player : NetworkBehaviour, IPlayerState
 
     private void Start()
     {
+        // Add for all players
+        GameManager.Instance?.AddPlayers(this);
+
         if (!isLocalPlayer)
         {
             return;
         }
+
+        GameManager.Instance.LocalPlayer = this;
 
         gameObject.name = "Player: " + UnityEngine.Random.Range(10, 1000).ToString();
 

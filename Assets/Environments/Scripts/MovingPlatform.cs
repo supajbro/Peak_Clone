@@ -5,22 +5,30 @@ using UnityEngine;
 
 public class MovingPlatform : NetworkBehaviour
 {
+    [Header("Main")]
     [SerializeField] private List<Transform> _points;
+    [SerializeField] private GameObject _mesh;
+    private LevelManager _manager = null;
 
     [Header("Speed")]
     [SerializeField] private float _speed = 10f;
 
-    private int _index = -1;
+    [Header("Checks")]
     [SerializeField] private bool _active = false;
     [SerializeField] private bool _activeOnStart = false;
     [SerializeField] private EnableNextSkyscraper _skyscraper;
-    [SerializeField] private GameObject _mesh;
 
+    private int _index = -1;
+    private Vector3 _nextPath = Vector3.zero;
+
+    // DEPRECATED
     [SyncVar] private Vector3 _syncedPosition;
 
     private void Start()
     {
         ResetPath();
+        _manager = FindObjectOfType<LevelManager>();
+        _nextPath = transform.position;
     }
 
     private void OnTriggerEnter(Collider collision)
@@ -30,18 +38,24 @@ public class MovingPlatform : NetworkBehaviour
 
     private void Update()
     {
-        if (isServer)
-        {
-            Move();
-            _syncedPosition = transform.position;
-        }
-        else
-        {
-            transform.position = Vector3.Lerp(transform.position, _syncedPosition, Time.deltaTime * 10f);
-        }
+        Debug.Log("Highest Player: " + _manager?.FindHighestPlayer()?.name);
+        PositionUpdate();
+
+        //if (isServer)
+        //{
+        //    Move();
+        //    _syncedPosition = transform.position;
+        //}
+        //else
+        //{
+        //    transform.position = Vector3.Lerp(transform.position, _syncedPosition, Time.deltaTime * 10f);
+        //}
     }
 
-    private void Move()
+    /// <summary>
+    /// Moves the platform based on the height of the highest player
+    /// </summary>
+    private void PositionUpdate()
     {
         if (!_skyscraper.IsNextActive && !_activeOnStart)
         {
@@ -66,11 +80,28 @@ public class MovingPlatform : NetworkBehaviour
             return;
         }
 
-        Vector3 next = _points[_index + 1].position;
-        transform.position = Vector3.MoveTowards(transform.position, next, _speed * Time.deltaTime);
+        //Vector3 next = _points[_index + 1].position;
+
+        if (_manager.FindHighestPlayer() == GameManager.Instance.LocalPlayer)
+        {
+            Debug.Log("[Moving] Not moving");
+            _nextPath.y = transform.position.y;
+        }
+        else if (_manager.FindHighestPlayer().transform.position.y > _points[1].position.y)
+        {
+            Debug.Log("[Moving] Moving to top");
+            _nextPath.y = _points[1].position.y;
+        }
+        else
+        {
+            Debug.Log("[Moving] Moving to highest player: " + _manager.FindHighestPlayer().name);
+            _nextPath.y = _manager.FindHighestPlayer().transform.position.y;
+        }
+
+        transform.position = Vector3.MoveTowards(transform.position, _nextPath, _speed * Time.deltaTime);
 
         // Reached next point
-        if (Vector3.Distance(transform.position, next) < 0.1f)
+        if (Vector3.Distance(transform.position, _nextPath) < 0.1f)
         {
             _index++;
         }
