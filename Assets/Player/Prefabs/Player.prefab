@@ -89,13 +89,13 @@ MonoBehaviour:
   _currentState: 0
   _previousState: 0
   _stats: {fileID: 11400000, guid: 105aa8156f38c3f45a31c35627323547, type: 2}
-  _ui: {fileID: 7771001418215781313, guid: a615be196de128640b731e8984c7a9a9, type: 3}
   _anim: {fileID: 151970179970813606}
   _meshToHide:
   - {fileID: 3235317356731867912}
   - {fileID: 1905072248613993484}
   - {fileID: 8699940348221421589}
   - {fileID: 3541740504086522511}
+  _uiPrefab: {fileID: 7771001418215781313, guid: a615be196de128640b731e8984c7a9a9, type: 3}
   _camPrefab: {fileID: 5469460888547916821, guid: 7e79ec819b132d34f8cc923c4c447e67, type: 3}
   _camPosition: {fileID: 9199886159177958217}
   _currentSpeed: 0

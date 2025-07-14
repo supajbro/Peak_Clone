@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,13 +5,17 @@ using UnityEngine.UI;
 public class PlayerUI : MonoBehaviour
 {
     private Player _player;
+    private LevelManager _manager;
 
     [SerializeField] private TextMeshProUGUI _playerState;
     [SerializeField] private Slider _stamineSlider;
+    [SerializeField] private Image _tracker;
+    public Image Tracker => _tracker;
 
     public void InitUI(Player thisPlayer)
     {
         _player = thisPlayer;
+        _manager = FindObjectOfType<LevelManager>();
     }
 
     private void Start()

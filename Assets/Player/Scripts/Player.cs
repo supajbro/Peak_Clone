@@ -43,10 +43,14 @@ public class Player : NetworkBehaviour, IPlayerState
 
     [Header("Main")]
     [SerializeField] private PlayerStats _stats;
-    [SerializeField] private PlayerUI _ui;
     [SerializeField] private Animator _anim;
     [SerializeField] private List<SkinnedMeshRenderer> _meshToHide;
     private CharacterController _controller;
+    private LevelManager _manager;
+
+    [Header("UI")]
+    [SerializeField] private PlayerUI _uiPrefab;
+    private PlayerUI _ui;
 
     [Header("Camera")]
     [SerializeField] private Camera _camPrefab;
@@ -99,9 +103,13 @@ public class Player : NetworkBehaviour, IPlayerState
 
     private void Start()
     {
-        // Add for all players
+        LocalPlayerInit();
         GameManager.Instance?.AddPlayers(this);
+        SpawnLocalPlayerUI();
+    }
 
+    private void LocalPlayerInit()
+    {
         if (!isLocalPlayer)
         {
             return;
@@ -116,8 +124,10 @@ public class Player : NetworkBehaviour, IPlayerState
         _cam = Instantiate(_camPrefab, _camPosition);
         _cam.transform.localPosition = Vector3.zero;
 
-        var ui = Instantiate(_ui);
-        ui.InitUI(this);
+        _ui = Instantiate(_uiPrefab);
+        _ui.InitUI(this);
+        _manager = FindObjectOfType<LevelManager>();
+        _manager?.SetTracker(_ui?.Tracker);
 
         _stamina.SetStamina(_stamina.MaxStamina);
 
@@ -129,6 +139,23 @@ public class Player : NetworkBehaviour, IPlayerState
         {
             mesh.shadowCastingMode = ShadowCastingMode.ShadowsOnly;
         }
+    }
+
+    /// <summary>
+    /// Finds all the players so we can spawn their head
+    /// </summary>
+    private void SpawnLocalPlayerUI()
+    {
+        if (!isLocalPlayer)
+        {
+            return;
+        }
+
+        foreach (var player in GameManager.Instance.Players)
+        {
+            _manager.SpawnPlayerHead(player);
+        }
+        GameManager.Instance.OnAddPlayer += _manager.SpawnPlayerHead;
     }
 
     private void Update()

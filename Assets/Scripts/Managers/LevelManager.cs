@@ -1,14 +1,26 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class LevelManager : MonoBehaviour
 {
     private GameManager _manager;
 
+    [Header("End Goal")]
+    [SerializeField] private GameObject _endGoal;
+    public GameObject EndGoal => _endGoal;
+
+    [Header("Prefabs")]
+    [SerializeField] private Image _playerHeadPrefab;
+    private Image _tracker;
+    public void SetTracker(Image image)
+    {
+        _tracker = image;
+    }
+
     private void Start()
     {
         _manager = GameManager.Instance;
+        //_manager.OnAddPlayer += SpawnPlayerHead;
     }
 
     public Player FindHighestPlayer()
@@ -37,5 +49,12 @@ public class LevelManager : MonoBehaviour
             }
         }
         return highestPlayer;
+    }
+
+    public void SpawnPlayerHead(Player player)
+    {
+        Debug.Log("[UI Spawn] Head spawn");
+        var head = Instantiate(_playerHeadPrefab, _tracker.transform);
+        head.GetComponent<PlayerHead>().Init(player, _tracker, _endGoal);
     }
 }
