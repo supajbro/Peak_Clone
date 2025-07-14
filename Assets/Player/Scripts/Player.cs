@@ -75,6 +75,8 @@ public class Player : NetworkBehaviour, IPlayerState
 
     [Header("Knockback")]
     private float _knockbackTime = 0f;
+    private bool _knockbackOnImpact = false;
+    private Vector3 _previousVelocity = Vector3.zero;
 
     [Header("Stamina")]
     [SerializeField] private Stamina _stamina;
@@ -540,6 +542,7 @@ public class Player : NetworkBehaviour, IPlayerState
 
     public void BigImpactUpdate()
     {
+
         // Init of state
         if (!_impact)
         {
@@ -555,9 +558,13 @@ public class Player : NetworkBehaviour, IPlayerState
         _currentImpactHeight = Mathf.Max(_stats.MinImpactHeight, _currentImpactHeight);
         _currentImpactHeight = (_currentImpactHeight < _stats.MaxImpactHeight) ? _currentImpactHeight + Time.deltaTime * _stats.ImpactScaler : _stats.MaxImpactHeight;
 
+        // Knockback movement if player was knocked back
+        Vector3 knockbackVel = (_knockbackOnImpact) ? _previousVelocity : Vector3.zero;
+        const float KnockbackScaler = 40f;
+
         // Move player upwards
-        Vector3 movement = new Vector3(0f, _currentImpactHeight, 0f);
-        Vector3 move = (movement) * _currentSpeed * Time.deltaTime;
+        Vector3 verticalMovement = new Vector3(0f, _currentImpactHeight, 0f);
+        Vector3 move = (verticalMovement + (knockbackVel / KnockbackScaler)) * _currentSpeed * Time.deltaTime;
         move.y = _currentImpactHeight * Time.deltaTime;
         _controller?.Move(move);
 
@@ -730,8 +737,15 @@ public class Player : NetworkBehaviour, IPlayerState
         {
             if (IsGrounded() && _stopKnockback)
             {
+                Debug.Log("[Knockback] Is knockback: " + _isKnockback + " state: " + _currentState);
                 _isKnockback = false;
+                _previousVelocity = _knockbackVelocity;
                 _knockbackVelocity = Vector3.zero;
+
+                if(_currentState == IPlayerState.PlayerState.BigImpact)
+                {
+                    _knockbackOnImpact = true;
+                }
             }
             Debug.Log("[Knockback] Started knockback: " + gameObject.name);
             _controller.Move(_knockbackVelocity * Time.deltaTime);
