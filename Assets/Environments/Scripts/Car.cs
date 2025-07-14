@@ -7,6 +7,13 @@ public class Car : NetworkBehaviour
 {
     [SerializeField] private List<Transform> _points;
 
+    [SerializeField] private GameObject _skyscraper;
+    [SerializeField] private GameObject _body;
+    [SerializeField] private GameObject _leftWheel;
+    [SerializeField] private GameObject _rightWheel;
+    [SerializeField] private GameObject _backLeftWheel;
+    [SerializeField] private GameObject _backRightWheel;
+
     [Header("Speed")]
     [SerializeField] private float _currentSpeed = -1f;
     [SerializeField] private float _normalSpeed = 10f;
@@ -25,6 +32,7 @@ public class Car : NetworkBehaviour
 
     private int _index = -1;
     private bool _active = false;
+    [SerializeField] private bool _activeOnStart = false;
 
     [SyncVar] private Vector3 _syncedPosition;
     [SyncVar] private Quaternion _syncedRotation;
@@ -36,24 +44,37 @@ public class Car : NetworkBehaviour
 
     private void Update()
     {
-        if (isServer)
-        {
-            CarUpdate();
-            _syncedPosition = transform.position;
-            _syncedRotation = transform.rotation;
-        }
-        else
-        {
-            // Smoothly interpolate toward the synced values
-            transform.position = Vector3.Lerp(transform.position, _syncedPosition, Time.deltaTime * 10f);
-            transform.rotation = Quaternion.Lerp(transform.rotation, _syncedRotation, Time.deltaTime * 10f);
-        }
+        CarUpdate();
+
+        //if (isServer)
+        //{
+        //    CarUpdate();
+        //    _syncedPosition = transform.position;
+        //    _syncedRotation = transform.rotation;
+        //}
+        //else
+        //{
+        //    // Smoothly interpolate toward the synced values
+        //    transform.position = Vector3.Lerp(transform.position, _syncedPosition, Time.deltaTime * 10f);
+        //    transform.rotation = Quaternion.Lerp(transform.rotation, _syncedRotation, Time.deltaTime * 10f);
+        //}
         HitPlayer();
     }
 
     private Quaternion _previousRot;
     private void CarUpdate()
     {
+        if ((_skyscraper != null && !_skyscraper.activeInHierarchy) && !_activeOnStart)
+        {
+            _body.SetActive(false);
+            _leftWheel.SetActive(false);
+            _rightWheel.SetActive(false);
+            _backLeftWheel.SetActive(false);
+            _backRightWheel.SetActive(false);
+            return;
+        }
+        _body.SetActive(true);
+
         if (!_active)
         {
             // return;

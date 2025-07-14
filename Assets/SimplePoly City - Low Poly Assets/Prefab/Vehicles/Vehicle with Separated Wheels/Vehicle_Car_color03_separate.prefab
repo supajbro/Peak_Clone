@@ -558,6 +558,12 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  _skyscraper: {fileID: 0}
+  _body: {fileID: 100008}
+  _leftWheel: {fileID: 100006}
+  _rightWheel: {fileID: 100004}
+  _backLeftWheel: {fileID: 100002}
+  _backRightWheel: {fileID: 100000}
   _currentSpeed: -1
   _normalSpeed: 50
   _turningSpeed: 2
@@ -570,6 +576,7 @@ MonoBehaviour:
   _force: 50
   _knockbackDur: 1
   _upwardForce: 1
+  _activeOnStart: 1
 --- !u!114 &379511181957386388
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -602,7 +609,7 @@ MonoBehaviour:
   syncDirection: 1
   syncMode: 0
   syncInterval: 0
-  target: {fileID: 2879984538321088479, guid: d3a10dcc18811104b9d67e7d14dd8fc6, type: 3}
+  target: {fileID: 400010}
   syncPosition: 1
   syncRotation: 1
   syncScale: 0
