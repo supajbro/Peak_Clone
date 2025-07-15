@@ -62,7 +62,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 3da3ee09522957647b9e61398a358109, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -265,11 +265,11 @@ MonoBehaviour:
   _points:
   - {fileID: 5012961670251605669}
   - {fileID: 5337598586503143811}
+  _mesh: {fileID: 0}
   _speed: 7.5
   _active: 0
   _activeOnStart: 0
   _skyscraper: {fileID: 0}
-  _mesh: {fileID: 0}
 --- !u!114 &8669339586662067843
 MonoBehaviour:
   m_ObjectHideFlags: 0

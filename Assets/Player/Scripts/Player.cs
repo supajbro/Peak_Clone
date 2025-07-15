@@ -74,6 +74,10 @@ public class Player : NetworkBehaviour, IPlayerState
     [SerializeField] private float _flipTimer = 0f;
     private int _rotationDegree = 0;
 
+    [Header("Head Bopping")]
+    private float _bopTimer;
+    private Vector3 _originalCamLocalPos;
+
     [Header("Koyote Time")]
     [SerializeField] private float _currentKoyoteTime = 0f;
 
@@ -123,6 +127,7 @@ public class Player : NetworkBehaviour, IPlayerState
 
         _cam = Instantiate(_camPrefab, _camPosition);
         _cam.transform.localPosition = Vector3.zero;
+        _originalCamLocalPos = _cam.transform.localPosition;
 
         _ui = Instantiate(_uiPrefab);
         _ui.InitUI(this);
@@ -151,10 +156,13 @@ public class Player : NetworkBehaviour, IPlayerState
             return;
         }
 
+        // Spawn in all existing player heads
         foreach (var player in GameManager.Instance.Players)
         {
             _manager.SpawnPlayerHead(player);
         }
+        
+        // Add callback so we can add player heads for users who join later
         GameManager.Instance.OnAddPlayer += _manager.SpawnPlayerHead;
     }
 
@@ -346,6 +354,57 @@ public class Player : NetworkBehaviour, IPlayerState
         float smoothedVerticalRot = Mathf.LerpAngle(_cam.transform.eulerAngles.x, _verticalRot, _stats.SmoothFactor);
         float smoothedHorizontalRot = Mathf.LerpAngle(_cam.transform.eulerAngles.y, _horizontalRot, _stats.SmoothFactor);
         _cam.transform.rotation = Quaternion.Euler(smoothedVerticalRot, smoothedHorizontalRot, 0f);
+
+        HeadBoppingUpdate();
+    }
+
+    private bool _playingLandingBop = false;
+    private float _landingBopTimer = 0f;
+    private float _landingBopDuration = 0.5f;
+    private void HeadBoppingUpdate()
+    {
+        // Head bopping effect
+        bool isMoving = (_currentState == IPlayerState.PlayerState.Walking || _currentState == IPlayerState.PlayerState.Running) && !_playingLandingBop;
+        if (isMoving)
+        {
+            float s = (_currentState == IPlayerState.PlayerState.Walking) ? _stats.BopWalkSpeed : _stats.BopRunSpeed;
+            _bopTimer += Time.deltaTime * s;
+            float bopAmount = Mathf.Sin(_bopTimer) * _stats.BopHeight;
+            Vector3 bopPosition = _originalCamLocalPos + new Vector3(0f, bopAmount, 0f);
+            _cam.transform.localPosition = bopPosition;
+        }
+        else
+        {
+            // Reset position when not moving
+            _bopTimer = 0f;
+            _cam.transform.localPosition = Vector3.Lerp(_cam.transform.localPosition, _originalCamLocalPos, Time.deltaTime * 5f);
+        }
+
+        if (_playingLandingBop)
+        {
+            _landingBopTimer += Time.deltaTime;
+
+            float t = _landingBopTimer / _landingBopDuration;
+            t = Mathf.Clamp01(t);
+
+            // Ease-out curve (fast at first, then slows down)
+            float downwardOffset = Mathf.Lerp(-_stats.BopHeight, 0f, t);
+
+            // Apply downward offset to camera position
+            Vector3 bopPosition = _originalCamLocalPos + new Vector3(0f, downwardOffset, 0f);
+            _cam.transform.localPosition = bopPosition;
+
+            if (_landingBopTimer >= _landingBopDuration)
+            {
+                _playingLandingBop = false;
+            }
+        }
+        else
+        {
+            // Reset camera position when not bopping
+            _bopTimer = 0f;
+            _cam.transform.localPosition = Vector3.Lerp(_cam.transform.localPosition, _originalCamLocalPos, Time.deltaTime * 5f);
+        }
     }
 
     public void IdleUpdate()
@@ -423,6 +482,8 @@ public class Player : NetworkBehaviour, IPlayerState
         if (IsGrounded())
         {
             SetState(_currentJumpHeight < _stats.FallPower ? IPlayerState.PlayerState.BigImpact : IPlayerState.PlayerState.Idle);
+            _playingLandingBop = true;
+            _landingBopTimer = 0f;
             //_currentJumpHeight = 0f;
         }
     }

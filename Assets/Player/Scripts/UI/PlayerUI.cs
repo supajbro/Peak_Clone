@@ -12,10 +12,13 @@ public class PlayerUI : MonoBehaviour
     [SerializeField] private Image _tracker;
     public Image Tracker => _tracker;
 
+    [SerializeField] private PlayerMiddleDot _dot;
+
     public void InitUI(Player thisPlayer)
     {
         _player = thisPlayer;
         _manager = FindObjectOfType<LevelManager>();
+        _dot.Init(_player);
     }
 
     private void Start()

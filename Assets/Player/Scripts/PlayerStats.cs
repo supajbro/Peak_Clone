@@ -30,6 +30,11 @@ public class PlayerStats : ScriptableObject
     [SerializeField] private float _sensitivity = 10f;
     [SerializeField, Range(0f, 1f)] private float _smoothFactor = 0.5f;
 
+    [Header("Head Bopping")]
+    [SerializeField] private float _bopHeight = .15f;
+    [SerializeField] private float _bopWalkSpeed = 10f;
+    [SerializeField] private float _bopRunSpeed = 15f;
+
     [Header("Koyote Time")]
     [SerializeField, Tooltip("How long player can be off the ground and still jump")] private float _maxKoyoteTime = 0.5f;
 
@@ -67,6 +72,11 @@ public class PlayerStats : ScriptableObject
     // Rotation
     public float Sensitivity => _sensitivity;
     public float SmoothFactor => _smoothFactor;
+
+    // Head Bopping
+    public float BopWalkSpeed => _bopWalkSpeed;
+    public float BopRunSpeed => _bopRunSpeed;
+    public float BopHeight => _bopHeight;
 
     // Koyote Time
     public float MaxKoyoteTime => _maxKoyoteTime;

@@ -27,6 +27,9 @@ MonoBehaviour:
   _fallPower: -50
   _sensitivity: 1.5
   _smoothFactor: 0.5
+  _bopHeight: 0.15
+  _bopWalkSpeed: 7.5
+  _bopRunSpeed: 15
   _maxKoyoteTime: 0.25
   _groundLayer:
     serializedVersion: 2
