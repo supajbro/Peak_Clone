@@ -26,6 +26,17 @@ public class PlayerHead : MonoBehaviour
             return;
         }
 
+        if(_target == GameManager.Instance.LocalPlayer)
+        {
+            transform.SetAsLastSibling();
+            // Pulsate scale with sine wave
+            float pulseSpeed = 4f;
+            float pulseAmount = 0.1f;
+            float scale = 1f + Mathf.Sin(Time.time * pulseSpeed) * pulseAmount;
+
+            transform.localScale = new Vector3(scale, scale, 1f);
+        }
+
         float height = _target.transform.position.y;
         float highestPoint = _endGoal.transform.position.y;
 
