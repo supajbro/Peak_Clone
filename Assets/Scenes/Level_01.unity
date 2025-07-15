@@ -19846,6 +19846,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1292925015510542288, guid: 3656a10d1e2437142bbfaa29dffb4fa4, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2109780612}
+    - targetCorrespondingSourceObject: {fileID: 1292925015510542288, guid: 3656a10d1e2437142bbfaa29dffb4fa4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2109780617}
+    - targetCorrespondingSourceObject: {fileID: 1292925015510542288, guid: 3656a10d1e2437142bbfaa29dffb4fa4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2109780616}
   m_SourcePrefab: {fileID: 100100000, guid: 3656a10d1e2437142bbfaa29dffb4fa4, type: 3}
 --- !u!4 &417891970 stripped
 Transform:
@@ -32657,6 +32663,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c634476ea93db98449f9ffdb6294bf7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
   _wallFaces:
   - Face: {fileID: 0}
     BlockSpacing: 15
@@ -32669,6 +32678,7 @@ MonoBehaviour:
   - Prefab: {fileID: 0}
     CanRotate: 1
     AvailableRotations: []
+  _generationSeed: 42
 --- !u!1 &679931832
 GameObject:
   m_ObjectHideFlags: 0
@@ -38087,7 +38097,17 @@ MonoBehaviour:
   playerPrefab: {fileID: 771298776369122812, guid: d3a10dcc18811104b9d67e7d14dd8fc6, type: 3}
   autoCreatePlayer: 1
   playerSpawnMethod: 0
-  spawnPrefabs: []
+  spawnPrefabs:
+  - {fileID: 8790618036335195658, guid: 3041d215198ade8428fe8726df7622f9, type: 3}
+  - {fileID: 4773529794878722189, guid: 3f1a7a306d7d05e44829a8317dfd8664, type: 3}
+  - {fileID: 390716472748452198, guid: e094b3b738df100488df2fb71bf3be1a, type: 3}
+  - {fileID: 771298776369122812, guid: d3a10dcc18811104b9d67e7d14dd8fc6, type: 3}
+  - {fileID: 1078168459482352737, guid: b61d7e390d1e86641a631c4b4b6f8bc9, type: 3}
+  - {fileID: 1078168459482352737, guid: 7c1e8c0ece822d5448543b7b82cb4037, type: 3}
+  - {fileID: 1078168459482352737, guid: 750fcd7e65979634dba5488b6099ebf4, type: 3}
+  - {fileID: 1078168459482352737, guid: 5e68faff1f42c22419536b90657b9b5c, type: 3}
+  - {fileID: 100010, guid: 11a57a102cdb5e642899ceab079f1938, type: 3}
+  - {fileID: 6254414863143941357, guid: c4a2e993493cb45498aada3a833d0696, type: 3}
   exceptionsDisconnect: 1
   snapshotSettings:
     bufferTimeMultiplier: 2
@@ -97077,6 +97097,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c634476ea93db98449f9ffdb6294bf7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
   _wallFaces:
   - Face: {fileID: 1442024244}
     BlockSpacing: 10
@@ -97186,6 +97209,58 @@ MonoBehaviour:
     CanRotate: 1
     AvailableRotations:
     - {x: -0.70710677, y: 0, z: 0, w: 0.70710677}
+  _generationSeed: 42
+--- !u!114 &2109780616
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2109780608}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ff3ba0becae47b8b9381191598957c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncDirection: 1
+  syncMode: 0
+  syncInterval: 0
+  target: {fileID: 417891970}
+  syncPosition: 1
+  syncRotation: 1
+  syncScale: 0
+  onlySyncOnChange: 1
+  compressRotation: 1
+  interpolatePosition: 1
+  interpolateRotation: 1
+  interpolateScale: 1
+  coordinateSpace: 0
+  timelineOffset: 1
+  showGizmos: 0
+  showOverlay: 0
+  overlayColor: {r: 0, g: 0, b: 0, a: 0.5}
+  onlySyncOnChangeCorrectionMultiplier: 2
+  useFixedUpdate: 0
+  rotationSensitivity: 0.01
+  positionPrecision: 0.01
+  scalePrecision: 0.01
+--- !u!114 &2109780617
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2109780608}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sceneId: 530146622
+  _assetId: 2359819229
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0
 --- !u!1 &2109800922
 GameObject:
   m_ObjectHideFlags: 0

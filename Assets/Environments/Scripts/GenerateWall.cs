@@ -1,68 +1,51 @@
-using System.Collections;
+using Mirror;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.Rendering.DebugUI.Table;
+using static GenerateWall;
 
-public class GenerateWall : MonoBehaviour
+public class GenerateWall : NetworkBehaviour
 {
     [SerializeField] private WallFace[] _wallFaces;
     [SerializeField] private Block[] _climbBlockPrefabs;
+    [SerializeField] private int _generationSeed = 42;
+    private List<BlockSpawnData> _spawnDataList = new List<BlockSpawnData>();
+
+    public struct BlockSpawnData
+    {
+        public Vector3 Position;
+        public Quaternion Rotation;
+        public int PrefabIndex;
+    }
 
     private void Start()
     {
-        GenerateAllWalls();
+        //GenerateAllWalls();
     }
 
-    private void GenerateAllWalls()
+    public override void OnStartServer()
     {
+        base.OnStartServer();
+        GenerateAndSpawn();
+    }
+
+    [Server]
+    private void GenerateAndSpawn()
+    {
+        Random.InitState(1234); // Make it reproducible
+
         foreach (var wall in _wallFaces)
         {
-            wall.Generate(transform);
+            wall.Generate(transform, _climbBlockPrefabs, _spawnDataList);
+        }
+
+        // Actually spawn
+        foreach (var data in _spawnDataList)
+        {
+            Block block = _climbBlockPrefabs[data.PrefabIndex];
+            GameObject obj = Instantiate(block.Prefab, data.Position, data.Rotation);
+            NetworkServer.Spawn(obj);
         }
     }
-
-    //private void Generate(WallFace wall)
-    //{
-    //    Vector3 up = wall.Face.forward;         // Climbing direction
-    //    Vector3 right = wall.Face.right;        // Horizontal
-    //    Vector3 forward = wall.Face.up;         // Outward-facing normal
-
-    //    Renderer rend = wall.Face.GetComponent<Renderer>();
-    //    Vector3 wallSize = rend.bounds.size;
-
-    //    Vector3 basePos = wall.Face.position - up * (wallSize.y / 2f); // Start from bottom
-
-    //    for (float z = 0; z < wallSize.y; z += wall.BlockSpacing)
-    //    {
-    //        for (float x = -wallSize.x / 2f; x < wallSize.x / 2f; x += wall.BlockSpacing)
-    //        {
-    //            if (Random.value > wall.SpawnChance)
-    //            {
-    //                continue;
-    //            }
-
-    //            Vector3 localOffset = right * x + up * z;
-    //            Vector3 worldPos = basePos + localOffset;
-
-    //            // Offset X position of the block randomly
-    //            const float xOffset = 5f;
-    //            var xRand = Random.Range(-xOffset, xOffset);
-    //            worldPos.x += xRand;
-
-    //            //Quaternion rot = Quaternion.LookRotation(forward) * Quaternion.Euler(90f, 0f, 0f);
-
-    //            float surfaceOffset = 0.01f;
-    //            worldPos += forward * surfaceOffset;
-
-    //            GetRandomBlock().SpawnBlock(worldPos, transform);
-    //        }
-    //    }
-    //}
-
-    //Block GetRandomBlock()
-    //{
-    //    return _climbBlockPrefabs[Random.Range(0, _climbBlockPrefabs.Length)];
-    //}
 }
 
 [System.Serializable]
@@ -73,40 +56,39 @@ public class WallFace
     public float SpawnChance = .6f;
     [SerializeField] private Block[] _climbBlockPrefabs;
 
-    public void Generate(Transform parent)
+    public void Generate(Transform parent, Block[] blockPrefabs, List<BlockSpawnData> outSpawnList)
     {
-        Vector3 up = Face.forward;         // Climbing direction
-        Vector3 right = Face.right;        // Horizontal
-        Vector3 forward = Face.up;         // Outward-facing normal
+        Vector3 up = Face.forward;
+        Vector3 right = Face.right;
+        Vector3 forward = Face.up;
 
         Renderer rend = Face.GetComponent<Renderer>();
         Vector3 wallSize = rend.bounds.size;
-
-        Vector3 basePos = Face.position - up * (wallSize.y / 2f); // Start from bottom
+        Vector3 basePos = Face.position - up * (wallSize.y / 2f);
 
         for (float z = 0; z < wallSize.y; z += BlockSpacing)
         {
             for (float x = -wallSize.x / 2f; x < wallSize.x / 2f; x += BlockSpacing)
             {
                 if (Random.value > SpawnChance)
-                {
                     continue;
-                }
 
                 Vector3 localOffset = right * x + up * z;
                 Vector3 worldPos = basePos + localOffset;
 
-                // Offset X position of the block randomly
-                const float xOffset = 5f;
-                var xRand = Random.Range(-xOffset, xOffset);
-                worldPos.x += xRand;
+                float xOffset = 5f;
+                worldPos += right * Random.Range(-xOffset, xOffset);
+                worldPos += forward * 0.01f;
 
-                //Quaternion rot = Quaternion.LookRotation(forward) * Quaternion.Euler(90f, 0f, 0f);
+                int prefabIndex = Random.Range(0, blockPrefabs.Length);
+                Quaternion rotation = blockPrefabs[prefabIndex].GetRandomRotation();
 
-                float surfaceOffset = 0.01f;
-                worldPos += forward * surfaceOffset;
-
-                GetRandomBlock().SpawnBlock(worldPos, parent);
+                outSpawnList.Add(new BlockSpawnData
+                {
+                    Position = worldPos,
+                    Rotation = rotation,
+                    PrefabIndex = prefabIndex
+                });
             }
         }
     }
@@ -128,5 +110,13 @@ public class Block
     {
         var rot = AvailableRotations[Random.Range(0, AvailableRotations.Length)];
         GameObject block = GenerateWall.Instantiate(Prefab, pos, rot, parent);
+    }
+
+    public Quaternion GetRandomRotation()
+    {
+        if (AvailableRotations != null && AvailableRotations.Length > 0)
+            return AvailableRotations[Random.Range(0, AvailableRotations.Length)];
+
+        return Quaternion.identity;
     }
 }
