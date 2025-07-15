@@ -38,12 +38,12 @@ public class MovingPlatform : NetworkBehaviour
 
     private void Update()
     {
-        Debug.Log("Highest Player: " + _manager?.FindHighestPlayer()?.name);
+        //Debug.Log("Highest Player: " + _manager?.FindHighestPlayer()?.name);
         PositionUpdate();
 
         //if (isServer)
         //{
-        //    Move();
+        //    PositionUpdate();
         //    _syncedPosition = transform.position;
         //}
         //else
@@ -84,18 +84,18 @@ public class MovingPlatform : NetworkBehaviour
 
         if (_manager.FindHighestPlayer() == GameManager.Instance.LocalPlayer)
         {
-            Debug.Log("[Moving] Not moving");
             _nextPath.y = transform.position.y;
+            Debug.Log("[Moving] Not moving: " + _nextPath.y);
         }
         else if (_manager.FindHighestPlayer().transform.position.y > _points[1].position.y)
         {
-            Debug.Log("[Moving] Moving to top");
             _nextPath.y = _points[1].position.y;
+            Debug.Log("[Moving] Moving to top: " + _nextPath.y);
         }
         else
         {
-            Debug.Log("[Moving] Moving to highest player: " + _manager.FindHighestPlayer().name);
             _nextPath.y = _manager.FindHighestPlayer().transform.position.y;
+            Debug.Log("[Moving] Moving to highest player: " + _manager.FindHighestPlayer().name + ", " + _nextPath.y);
         }
 
         transform.position = Vector3.MoveTowards(transform.position, _nextPath, _speed * Time.deltaTime);

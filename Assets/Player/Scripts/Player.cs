@@ -367,7 +367,6 @@ public class Player : NetworkBehaviour, IPlayerState
         bool isMoving = (_currentState == IPlayerState.PlayerState.Walking || _currentState == IPlayerState.PlayerState.Running) && !_playingLandingBop;
         if (isMoving)
         {
-            Debug.Log("Ass");
             float s = (_currentState == IPlayerState.PlayerState.Walking) ? _stats.BopWalkSpeed : _stats.BopRunSpeed;
             _bopTimer += Time.deltaTime * s;
             float bopAmount = Mathf.Sin(_bopTimer) * _stats.BopHeight;
