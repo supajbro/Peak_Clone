@@ -32667,7 +32667,7 @@ MonoBehaviour:
   - Face: {fileID: 0}
     BlockSpacing: 15
     SpawnChance: 0.6
-    _climbBlockPrefabs: []
+    BlocksToIgnore: 
   _climbBlockPrefabs:
   - Prefab: {fileID: 0}
     CanRotate: 1
@@ -32675,7 +32675,6 @@ MonoBehaviour:
   - Prefab: {fileID: 0}
     CanRotate: 1
     AvailableRotations: []
-  _generationSeed: 42
 --- !u!1 &679931832
 GameObject:
   m_ObjectHideFlags: 0
@@ -97101,91 +97100,19 @@ MonoBehaviour:
   - Face: {fileID: 1442024244}
     BlockSpacing: 10
     SpawnChance: 0.3
-    _climbBlockPrefabs:
-    - Prefab: {fileID: 8790618036335195658, guid: 3041d215198ade8428fe8726df7622f9, type: 3}
-      CanRotate: 1
-      AvailableRotations:
-      - {x: -0.70710677, y: 0, z: 0, w: 0.70710677}
-    - Prefab: {fileID: 390716472748452198, guid: e094b3b738df100488df2fb71bf3be1a, type: 3}
-      CanRotate: 1
-      AvailableRotations:
-      - {x: 0, y: 0, z: 0, w: 0}
-      - {x: 0.70710677, y: 0, z: 0, w: 0.70710677}
-      - {x: 0, y: 0.70710677, z: 0, w: 0.70710677}
-    - Prefab: {fileID: 4773529794878722189, guid: 3f1a7a306d7d05e44829a8317dfd8664, type: 3}
-      CanRotate: 1
-      AvailableRotations:
-      - {x: 0.70710677, y: 0, z: 0, w: 0.70710677}
-      - {x: 0, y: 0, z: 0, w: 1}
+    BlocksToIgnore: 03000000040000000500000006000000
   - Face: {fileID: 1930551044}
     BlockSpacing: 20
     SpawnChance: 0.8
-    _climbBlockPrefabs:
-    - Prefab: {fileID: 8790618036335195658, guid: 3041d215198ade8428fe8726df7622f9, type: 3}
-      CanRotate: 1
-      AvailableRotations:
-      - {x: -0.70710677, y: 0, z: 0, w: 0.70710677}
-    - Prefab: {fileID: 390716472748452198, guid: e094b3b738df100488df2fb71bf3be1a, type: 3}
-      CanRotate: 1
-      AvailableRotations:
-      - {x: 0, y: 0, z: 0, w: 0}
-      - {x: 0.70710677, y: 0, z: 0, w: 0.70710677}
-      - {x: 0, y: 0.70710677, z: 0, w: 0.70710677}
-    - Prefab: {fileID: 4773529794878722189, guid: 3f1a7a306d7d05e44829a8317dfd8664, type: 3}
-      CanRotate: 1
-      AvailableRotations:
-      - {x: 0.70710677, y: 0, z: 0, w: 0.70710677}
-      - {x: 0, y: 0, z: 0, w: 1}
-    - Prefab: {fileID: 1078168459482352737, guid: 750fcd7e65979634dba5488b6099ebf4, type: 3}
-      CanRotate: 1
-      AvailableRotations:
-      - {x: -0.70710677, y: 0, z: 0, w: 0.70710677}
+    BlocksToIgnore: 030000000400000006000000
   - Face: {fileID: 1734822488}
     BlockSpacing: 20
     SpawnChance: 0.8
-    _climbBlockPrefabs:
-    - Prefab: {fileID: 8790618036335195658, guid: 3041d215198ade8428fe8726df7622f9, type: 3}
-      CanRotate: 1
-      AvailableRotations:
-      - {x: -0.70710677, y: 0, z: 0, w: 0.70710677}
-    - Prefab: {fileID: 390716472748452198, guid: e094b3b738df100488df2fb71bf3be1a, type: 3}
-      CanRotate: 1
-      AvailableRotations:
-      - {x: 0, y: 0, z: 0, w: 0}
-      - {x: 0.70710677, y: 0, z: 0, w: 0.70710677}
-      - {x: 0, y: 0.70710677, z: 0, w: 0.70710677}
-    - Prefab: {fileID: 4773529794878722189, guid: 3f1a7a306d7d05e44829a8317dfd8664, type: 3}
-      CanRotate: 1
-      AvailableRotations:
-      - {x: 0.70710677, y: 0, z: 0, w: 0.70710677}
-      - {x: 0, y: 0, z: 0, w: 1}
-    - Prefab: {fileID: 1078168459482352737, guid: 5e68faff1f42c22419536b90657b9b5c, type: 3}
-      CanRotate: 1
-      AvailableRotations:
-      - {x: -0.70710677, y: 0, z: 0, w: 0.70710677}
+    BlocksToIgnore: 030000000400000005000000
   - Face: {fileID: 924539505}
     BlockSpacing: 10
     SpawnChance: 0.3
-    _climbBlockPrefabs:
-    - Prefab: {fileID: 8790618036335195658, guid: 3041d215198ade8428fe8726df7622f9, type: 3}
-      CanRotate: 1
-      AvailableRotations:
-      - {x: -0.70710677, y: 0, z: 0, w: 0.70710677}
-    - Prefab: {fileID: 390716472748452198, guid: e094b3b738df100488df2fb71bf3be1a, type: 3}
-      CanRotate: 1
-      AvailableRotations:
-      - {x: 0, y: 0, z: 0, w: 0}
-      - {x: 0.70710677, y: 0, z: 0, w: 0.70710677}
-      - {x: 0, y: 0.70710677, z: 0, w: 0.70710677}
-    - Prefab: {fileID: 4773529794878722189, guid: 3f1a7a306d7d05e44829a8317dfd8664, type: 3}
-      CanRotate: 1
-      AvailableRotations:
-      - {x: 0.70710677, y: 0, z: 0, w: 0.70710677}
-      - {x: 0, y: 0, z: 0, w: 1}
-    - Prefab: {fileID: 1078168459482352737, guid: b61d7e390d1e86641a631c4b4b6f8bc9, type: 3}
-      CanRotate: 1
-      AvailableRotations:
-      - {x: -0.70710677, y: 0, z: 0, w: 0.70710677}
+    BlocksToIgnore: 030000000500000006000000
   _climbBlockPrefabs:
   - Prefab: {fileID: 8790618036335195658, guid: 3041d215198ade8428fe8726df7622f9, type: 3}
     CanRotate: 1
@@ -97206,7 +97133,18 @@ MonoBehaviour:
     CanRotate: 1
     AvailableRotations:
     - {x: -0.70710677, y: 0, z: 0, w: 0.70710677}
-  _generationSeed: 42
+  - Prefab: {fileID: 1078168459482352737, guid: b61d7e390d1e86641a631c4b4b6f8bc9, type: 3}
+    CanRotate: 1
+    AvailableRotations:
+    - {x: -0.70710677, y: 0, z: 0, w: 0.70710677}
+  - Prefab: {fileID: 1078168459482352737, guid: 750fcd7e65979634dba5488b6099ebf4, type: 3}
+    CanRotate: 1
+    AvailableRotations:
+    - {x: -0.70710677, y: 0, z: 0, w: 0.70710677}
+  - Prefab: {fileID: 1078168459482352737, guid: 5e68faff1f42c22419536b90657b9b5c, type: 3}
+    CanRotate: 1
+    AvailableRotations:
+    - {x: -0.70710677, y: 0, z: 0, w: 0.70710677}
 --- !u!114 &2109780616
 MonoBehaviour:
   m_ObjectHideFlags: 0

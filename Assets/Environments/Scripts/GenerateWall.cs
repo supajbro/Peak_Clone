@@ -1,5 +1,6 @@
 using Mirror;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using static GenerateWall;
 
@@ -18,11 +19,6 @@ public class GenerateWall : NetworkBehaviour
         public int PrefabIndex;
     }
 
-    private void Start()
-    {
-        //GenerateAllWalls();
-    }
-
     public override void OnStartServer()
     {
         base.OnStartServer();
@@ -34,8 +30,17 @@ public class GenerateWall : NetworkBehaviour
     {
         base.OnStartClient();
 
-        if (isServer) return; // already handled
-        if (NetworkServer.active) return; // already spawned
+        // already handled
+        if (isServer)
+        {
+            return;
+        }
+
+        // already spawned
+        if (NetworkServer.active)
+        {
+            return;
+        }
 
         if (_generationSeed != 0)
         {
@@ -47,15 +52,21 @@ public class GenerateWall : NetworkBehaviour
     [Server]
     private void GenerateAndSpawn(int seed)
     {
-        if (!NetworkServer.active && !isServer) return;
-
-        Random.InitState(seed);
-
-        foreach (var wall in _wallFaces)
+        if (!NetworkServer.active && !isServer)
         {
-            wall.Generate(transform, _climbBlockPrefabs, _spawnDataList);
+            return;
         }
 
+        // Set the random seed
+        Random.InitState(seed);
+
+        // Generate the terrain
+        foreach (var wall in _wallFaces)
+        {
+            wall.Generate(_climbBlockPrefabs, _spawnDataList);
+        }
+
+        // Spawn these over the networked
         foreach (var data in _spawnDataList)
         {
             GameObject prefab = _climbBlockPrefabs[data.PrefabIndex].Prefab;
@@ -71,9 +82,9 @@ public class WallFace
     public Transform Face;
     public float BlockSpacing = 15f;
     public float SpawnChance = .6f;
-    [SerializeField] private Block[] _climbBlockPrefabs;
+    public int[] BlocksToIgnore;
 
-    public void Generate(Transform parent, Block[] blockPrefabs, List<BlockSpawnData> outSpawnList)
+    public void Generate(Block[] blockPrefabs, List<BlockSpawnData> outSpawnList)
     {
         Vector3 up = Face.forward;
         Vector3 right = Face.right;
@@ -87,19 +98,32 @@ public class WallFace
         {
             for (float x = -wallSize.x / 2f; x < wallSize.x / 2f; x += BlockSpacing)
             {
+                // Random chance on what will spawn
                 if (Random.value > SpawnChance)
+                {
                     continue;
+                }
 
                 Vector3 localOffset = right * x + up * z;
                 Vector3 worldPos = basePos + localOffset;
 
+                // Offset this block randomly on the X axis
                 float xOffset = 5f;
                 worldPos += right * Random.Range(-xOffset, xOffset);
                 worldPos += forward * 0.01f;
 
+                // Set the index of the prefab and ensure this face isn't ignoring it (cant spawn there)
                 int prefabIndex = Random.Range(0, blockPrefabs.Length);
+                do
+                {
+                    prefabIndex = Random.Range(0, blockPrefabs.Length);
+                }
+                while (BlocksToIgnore.Contains(prefabIndex));
+
+                // Random rot of each block
                 Quaternion rotation = blockPrefabs[prefabIndex].GetRandomRotation();
 
+                // Add to the networked block spawn data so other clients can get this data
                 outSpawnList.Add(new BlockSpawnData
                 {
                     Position = worldPos,
@@ -108,11 +132,6 @@ public class WallFace
                 });
             }
         }
-    }
-
-    Block GetRandomBlock()
-    {
-        return _climbBlockPrefabs[Random.Range(0, _climbBlockPrefabs.Length)];
     }
 }
 
@@ -129,6 +148,10 @@ public class Block
         GameObject block = GenerateWall.Instantiate(Prefab, pos, rot, parent);
     }
 
+    /// <summary>
+    /// Randomly rotate block within the available rotations set
+    /// </summary>
+    /// <returns>Rotation</returns>
     public Quaternion GetRandomRotation()
     {
         if (AvailableRotations != null && AvailableRotations.Length > 0)
