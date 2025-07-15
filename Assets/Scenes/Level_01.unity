@@ -19838,9 +19838,6 @@ PrefabInstance:
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 2015836588190958920, guid: 3656a10d1e2437142bbfaa29dffb4fa4, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1843890885}
-    - targetCorrespondingSourceObject: {fileID: 2015836588190958920, guid: 3656a10d1e2437142bbfaa29dffb4fa4, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 907112098}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1292925015510542288, guid: 3656a10d1e2437142bbfaa29dffb4fa4, type: 3}
@@ -38101,7 +38098,6 @@ MonoBehaviour:
   - {fileID: 8790618036335195658, guid: 3041d215198ade8428fe8726df7622f9, type: 3}
   - {fileID: 4773529794878722189, guid: 3f1a7a306d7d05e44829a8317dfd8664, type: 3}
   - {fileID: 390716472748452198, guid: e094b3b738df100488df2fb71bf3be1a, type: 3}
-  - {fileID: 771298776369122812, guid: d3a10dcc18811104b9d67e7d14dd8fc6, type: 3}
   - {fileID: 1078168459482352737, guid: b61d7e390d1e86641a631c4b4b6f8bc9, type: 3}
   - {fileID: 1078168459482352737, guid: 7c1e8c0ece822d5448543b7b82cb4037, type: 3}
   - {fileID: 1078168459482352737, guid: 750fcd7e65979634dba5488b6099ebf4, type: 3}
@@ -45273,6 +45269,7 @@ Transform:
   - {fileID: 2082112020}
   - {fileID: 13064445}
   - {fileID: 1656926918}
+  - {fileID: 1843890885}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &948058554
@@ -85743,7 +85740,7 @@ GameObject:
   - component: {fileID: 1843890891}
   - component: {fileID: 1843890890}
   m_Layer: 0
-  m_Name: Victory
+  m_Name: First Victory
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -85757,12 +85754,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1843890884}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.0809, y: 0.73, z: 126.31}
-  m_LocalScale: {x: 33.090908, y: 25.885069, z: 4.173}
+  m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: -0.0809, y: 247.81001, z: 144.56998}
+  m_LocalScale: {x: 33.090908, y: 25.88507, z: 4.173}
   m_ConstrainProportionsScale: 1
   m_Children: []
-  m_Father: {fileID: 417891970}
+  m_Father: {fileID: 944708449}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &1843890886
 BoxCollider:

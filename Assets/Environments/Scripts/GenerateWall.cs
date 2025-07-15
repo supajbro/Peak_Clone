@@ -7,8 +7,9 @@ public class GenerateWall : NetworkBehaviour
 {
     [SerializeField] private WallFace[] _wallFaces;
     [SerializeField] private Block[] _climbBlockPrefabs;
-    [SerializeField] private int _generationSeed = 42;
     private List<BlockSpawnData> _spawnDataList = new List<BlockSpawnData>();
+
+    [SyncVar] private int _generationSeed;
 
     public struct BlockSpawnData
     {
@@ -25,24 +26,40 @@ public class GenerateWall : NetworkBehaviour
     public override void OnStartServer()
     {
         base.OnStartServer();
-        GenerateAndSpawn();
+        _generationSeed = Random.Range(int.MinValue, int.MaxValue);
+        GenerateAndSpawn(_generationSeed);
+    }
+
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+
+        if (isServer) return; // already handled
+        if (NetworkServer.active) return; // already spawned
+
+        if (_generationSeed != 0)
+        {
+            // Wait until SyncVar arrives
+            GenerateAndSpawn(_generationSeed);
+        }
     }
 
     [Server]
-    private void GenerateAndSpawn()
+    private void GenerateAndSpawn(int seed)
     {
-        Random.InitState(1234); // Make it reproducible
+        if (!NetworkServer.active && !isServer) return;
+
+        Random.InitState(seed);
 
         foreach (var wall in _wallFaces)
         {
             wall.Generate(transform, _climbBlockPrefabs, _spawnDataList);
         }
 
-        // Actually spawn
         foreach (var data in _spawnDataList)
         {
-            Block block = _climbBlockPrefabs[data.PrefabIndex];
-            GameObject obj = Instantiate(block.Prefab, data.Position, data.Rotation);
+            GameObject prefab = _climbBlockPrefabs[data.PrefabIndex].Prefab;
+            GameObject obj = Instantiate(prefab, data.Position, data.Rotation);
             NetworkServer.Spawn(obj);
         }
     }
