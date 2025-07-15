@@ -367,6 +367,7 @@ public class Player : NetworkBehaviour, IPlayerState
         bool isMoving = (_currentState == IPlayerState.PlayerState.Walking || _currentState == IPlayerState.PlayerState.Running) && !_playingLandingBop;
         if (isMoving)
         {
+            Debug.Log("Ass");
             float s = (_currentState == IPlayerState.PlayerState.Walking) ? _stats.BopWalkSpeed : _stats.BopRunSpeed;
             _bopTimer += Time.deltaTime * s;
             float bopAmount = Mathf.Sin(_bopTimer) * _stats.BopHeight;
@@ -388,7 +389,7 @@ public class Player : NetworkBehaviour, IPlayerState
             t = Mathf.Clamp01(t);
 
             // Ease-out curve (fast at first, then slows down)
-            float downwardOffset = Mathf.Lerp(-_stats.BopHeight, 0f, t);
+            float downwardOffset = Mathf.Lerp(-_stats.BopHeight * 5f, 0f, t);
 
             // Apply downward offset to camera position
             Vector3 bopPosition = _originalCamLocalPos + new Vector3(0f, downwardOffset, 0f);
@@ -399,7 +400,7 @@ public class Player : NetworkBehaviour, IPlayerState
                 _playingLandingBop = false;
             }
         }
-        else
+        else if(!isMoving)
         {
             // Reset camera position when not bopping
             _bopTimer = 0f;
