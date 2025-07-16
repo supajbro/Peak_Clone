@@ -33,12 +33,12 @@ public class MovingUpAndDown : NetworkBehaviour
 
     private void Move()
     {
-        if (!_skyscraper.IsNextActive)
-        {
-            _mesh.enabled = false;
-            return;
-        }
-        _mesh.enabled = true;
+        //if (!_skyscraper.IsNextActive)
+        //{
+        //    _mesh.enabled = false;
+        //    return;
+        //}
+        //_mesh.enabled = true;
 
         float newY = Mathf.Sin(Time.time * _frequency) * _amplitude;
         transform.position = _startPos + new Vector3(0f, newY, 0f);
