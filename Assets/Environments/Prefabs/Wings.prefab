@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 7199043577372489119}
   - component: {fileID: 4327890231042762246}
   - component: {fileID: 755161308478863144}
+  - component: {fileID: 124545030978802482}
   m_Layer: 0
   m_Name: Wings
   m_TagString: Untagged
@@ -209,3 +210,17 @@ MonoBehaviour:
   rotationSensitivity: 0.01
   positionPrecision: 0.01
   scalePrecision: 0.01
+--- !u!114 &124545030978802482
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6254414863143941357}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 695634492994d98458558e0cb596c27c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _meshs:
+  - {fileID: 6830232427422999067}

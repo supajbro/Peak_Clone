@@ -4,6 +4,7 @@ using UnityEngine;
 public class EnableNextSkyscraper : NetworkBehaviour
 {
     [SerializeField] private GameObject _next;
+    [SerializeField] private MeshRenderer _mesh;
     [SyncVar(hook = nameof(OnNextSkyscraperStateChanged))]
     private bool _isNextActive = false;
     public bool IsNextActive => _isNextActive;
@@ -20,12 +21,14 @@ public class EnableNextSkyscraper : NetworkBehaviour
 
     private void OnNextSkyscraperStateChanged(bool oldValue, bool newValue)
     {
-        _next.SetActive(newValue);
+        //_next.SetActive(newValue);
+        _mesh.enabled = newValue;
     }
 
     public override void OnStartClient()
     {
         // Late joiners will have the SyncVar's current value
-        _next.SetActive(_isNextActive);
+        //_next.SetActive(_isNextActive);
+        _mesh.enabled = _isNextActive;
     }
 }

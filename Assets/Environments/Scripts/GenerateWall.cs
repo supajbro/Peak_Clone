@@ -9,6 +9,7 @@ public class GenerateWall : NetworkBehaviour
     [SerializeField] private WallFace[] _wallFaces;
     [SerializeField] private Block[] _climbBlockPrefabs;
     private List<BlockSpawnData> _spawnDataList = new List<BlockSpawnData>();
+    [SerializeField] private Transform _parent;
 
     [SyncVar] private int _generationSeed;
 
@@ -77,6 +78,7 @@ public class GenerateWall : NetworkBehaviour
         {
             GameObject prefab = _climbBlockPrefabs[data.PrefabIndex].Prefab;
             GameObject obj = Instantiate(prefab, data.Position, data.Rotation);
+            obj.GetComponent<ProceduralBlock>().Init(GetComponent<NetworkIdentity>());
             NetworkServer.Spawn(obj);
         }
     }

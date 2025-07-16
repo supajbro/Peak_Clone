@@ -924,9 +924,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _originalMat: {fileID: 2100000, guid: 07d13faa961ec3c46a558410893a9c97, type: 2}
   _mesh: {fileID: 1905072248613993484}
-  _expressionTimer: 0
+  _timer: 0
   _minChangeTimer: 1
   _maxChangeTimer: 10
+  _regularExpressions: 01000000020000000300000004000000
 --- !u!137 &8699940348221421589 stripped
 SkinnedMeshRenderer:
   m_CorrespondingSourceObject: {fileID: -4396642182433536433, guid: 86e9b2833d2c69d44bed55f4503e5257, type: 3}

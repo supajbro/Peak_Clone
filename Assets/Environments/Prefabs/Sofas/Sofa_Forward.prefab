@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8459964974452595768}
   - component: {fileID: 2278968178798084220}
+  - component: {fileID: 1698633870929243613}
   m_Layer: 3
   m_Name: Sofa_Forward
   m_TagString: Untagged
@@ -51,6 +52,21 @@ MonoBehaviour:
   serverOnly: 0
   visibility: 0
   hasSpawned: 0
+--- !u!114 &1698633870929243613
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1078168459482352737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 695634492994d98458558e0cb596c27c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _meshs:
+  - {fileID: 5330753180847741143}
+  - {fileID: 6281059259227722119}
 --- !u!1001 &3883091910852131109
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -125,6 +141,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8251264422516167629, guid: c12cbdd8c7f58cc4e82747b66b152ca9, type: 3}
   m_PrefabInstance: {fileID: 3883091910852131109}
   m_PrefabAsset: {fileID: 0}
+--- !u!23 &6281059259227722119 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 7118306013613844642, guid: c12cbdd8c7f58cc4e82747b66b152ca9, type: 3}
+  m_PrefabInstance: {fileID: 3883091910852131109}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &3898007322955003658
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -185,5 +206,10 @@ PrefabInstance:
 --- !u!4 &1177085121170361718 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2759960757442148988, guid: cadde7815f1e38d439122da1f7c2a476, type: 3}
+  m_PrefabInstance: {fileID: 3898007322955003658}
+  m_PrefabAsset: {fileID: 0}
+--- !u!23 &5330753180847741143 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 9214966028753973213, guid: cadde7815f1e38d439122da1f7c2a476, type: 3}
   m_PrefabInstance: {fileID: 3898007322955003658}
   m_PrefabAsset: {fileID: 0}
