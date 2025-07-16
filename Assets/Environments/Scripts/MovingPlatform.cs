@@ -31,9 +31,12 @@ public class MovingPlatform : NetworkBehaviour
         _nextPath = transform.position;
     }
 
+    private Player _highestPlayer;
     private void OnTriggerEnter(Collider collision)
     {
         _active = true;
+
+        _highestPlayer = _manager.FindHighestPlayer();
     }
 
     private void Update()
@@ -69,6 +72,11 @@ public class MovingPlatform : NetworkBehaviour
             return;
         }
 
+        if (_highestPlayer == null)
+        {
+            return;
+        }
+
         if (_index >= _points.Count - 1)
         {
             StartCoroutine(RepositionDelay());
@@ -82,19 +90,20 @@ public class MovingPlatform : NetworkBehaviour
 
         //Vector3 next = _points[_index + 1].position;
 
-        if (_manager.FindHighestPlayer() == GameManager.Instance.LocalPlayer)
+        //if (_manager.FindHighestPlayer() == GameManager.Instance.LocalPlayer)
+        if(Vector3.Distance(_highestPlayer.transform.position, _points[0].transform.position) < 10f)
         {
             _nextPath.y = transform.position.y;
             Debug.Log("[Moving] Not moving: " + _nextPath.y);
         }
-        else if (_manager.FindHighestPlayer().transform.position.y > _points[1].position.y)
+        else if (_highestPlayer.transform.position.y > _points[1].position.y)
         {
             _nextPath.y = _points[1].position.y;
             Debug.Log("[Moving] Moving to top: " + _nextPath.y);
         }
         else
         {
-            _nextPath.y = _manager.FindHighestPlayer().transform.position.y;
+            _nextPath.y = _highestPlayer.transform.position.y;
             Debug.Log("[Moving] Moving to highest player: " + _manager.FindHighestPlayer().name + ", " + _nextPath.y);
         }
 

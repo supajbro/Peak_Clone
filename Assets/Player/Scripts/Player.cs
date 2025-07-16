@@ -105,6 +105,7 @@ public class Player : NetworkBehaviour, IPlayerState
     [SerializeField] private Transform _frontRight;
     [SerializeField] private Transform _frontLeft;
 
+    #region - INIT -
     private void Start()
     {
         LocalPlayerInit();
@@ -165,9 +166,20 @@ public class Player : NetworkBehaviour, IPlayerState
         // Add callback so we can add player heads for users who join later
         GameManager.Instance.OnAddPlayer += _manager.SpawnPlayerHead;
     }
+    #endregion
 
+    #region - UPDATE FUNC -
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            SkipToSkyscraper(_manager.MovingPlatformOne);
+        }
+        else if (Input.GetKeyDown(KeyCode.O))
+        {
+            SkipToSkyscraper(_manager.MovingPlatformTwo);
+        }
+
         StateUpdate();
         RotateUpdate();
         MovementUpdate();
@@ -326,7 +338,9 @@ public class Player : NetworkBehaviour, IPlayerState
             }
         }
     }
+    #endregion
 
+    #region - CAMERA UPDATE -
     /// <summary>
     /// Rotate the camera via the mouse
     /// </summary>
@@ -406,7 +420,9 @@ public class Player : NetworkBehaviour, IPlayerState
             _cam.transform.localPosition = Vector3.Lerp(_cam.transform.localPosition, _originalCamLocalPos, Time.deltaTime * 5f);
         }
     }
+    #endregion
 
+    #region - STATE UPDATE -
     public void IdleUpdate()
     {
         _anim.SetFloat("moveSpeed", 0f);
@@ -630,7 +646,6 @@ public class Player : NetworkBehaviour, IPlayerState
 
     public void BigImpactUpdate()
     {
-
         // Init of state
         if (!_impact)
         {
@@ -670,7 +685,9 @@ public class Player : NetworkBehaviour, IPlayerState
             SetState(IPlayerState.PlayerState.Falling);
         }
     }
+    #endregion
 
+    #region - COLLISION -
     private Transform _currentPlatform;
     private Vector3 _lastPlatformPosition;
     private void OnTriggerEnter(Collider other)
@@ -749,6 +766,7 @@ public class Player : NetworkBehaviour, IPlayerState
         }
         return false;
     }
+    #endregion
 
     public void BouncePlayer()
     {
@@ -878,6 +896,15 @@ public class Player : NetworkBehaviour, IPlayerState
             _knockbackVelocity = Vector3.zero;
             _isKnockback = false;
         }
+    }
+    #endregion
+
+    #region - DEBUG -
+    public void SkipToSkyscraper(GameObject skyscraper)
+    {
+        _controller.enabled = false;
+        transform.position = skyscraper.transform.position;
+        _controller.enabled = true;
     }
     #endregion
 }

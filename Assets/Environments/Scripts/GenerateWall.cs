@@ -19,6 +19,9 @@ public class GenerateWall : NetworkBehaviour
         public int PrefabIndex;
     }
 
+    /// <summary>
+    /// When the host joins the server
+    /// </summary>
     public override void OnStartServer()
     {
         base.OnStartServer();
@@ -26,6 +29,9 @@ public class GenerateWall : NetworkBehaviour
         GenerateAndSpawn(_generationSeed);
     }
 
+    /// <summary>
+    /// When another client joins the server
+    /// </summary>
     public override void OnStartClient()
     {
         base.OnStartClient();
