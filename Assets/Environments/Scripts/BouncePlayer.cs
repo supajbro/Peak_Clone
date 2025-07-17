@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class BouncePlayer : MonoBehaviour
 {
+    [SerializeField] private GameObject ignoreObject;
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.tag != "Player")
@@ -13,6 +15,12 @@ public class BouncePlayer : MonoBehaviour
 
         Debug.Log("[Bounce] Player bounce");
         Player player = other.gameObject.GetComponent<Player>();
+
+        if(player.gameObject == ignoreObject)
+        {
+            return;
+        }
+
         player.BouncePlayer();
     }
 }

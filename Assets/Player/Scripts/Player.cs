@@ -1,7 +1,9 @@
 using Mirror;
+using Steamworks;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -45,12 +47,19 @@ public class Player : NetworkBehaviour, IPlayerState
     [SerializeField] private PlayerStats _stats;
     [SerializeField] private Animator _anim;
     [SerializeField] private List<SkinnedMeshRenderer> _meshToHide;
+    [SerializeField] private TextMeshPro _playerName;
     private CharacterController _controller;
     private LevelManager _manager;
+
+    [Header("Allow Movement")]
+    private bool _canMove = false;
+    public bool CanMove => _canMove;
+    public void SetMovement(bool value) { _canMove = value; }
 
     [Header("UI")]
     [SerializeField] private PlayerUI _uiPrefab;
     private PlayerUI _ui;
+    public PlayerUI UI => _ui;
 
     [Header("Camera")]
     [SerializeField] private Camera _camPrefab;
@@ -115,14 +124,21 @@ public class Player : NetworkBehaviour, IPlayerState
 
     private void LocalPlayerInit()
     {
+        _playerName.text = SteamManager.Initialized && !string.IsNullOrEmpty(SteamFriends.GetPersonaName())
+            ? SteamFriends.GetPersonaName()
+            : "Player: " + UnityEngine.Random.Range(10, 1000);
+        gameObject.name = _playerName.text;
+
         if (!isLocalPlayer)
         {
             return;
         }
 
+        _playerName.gameObject.SetActive(false);
+
         GameManager.Instance.LocalPlayer = this;
 
-        gameObject.name = "Player: " + UnityEngine.Random.Range(10, 1000).ToString();
+        _canMove = true;
 
         _controller = GetComponent<CharacterController>();
 
@@ -171,6 +187,7 @@ public class Player : NetworkBehaviour, IPlayerState
     #region - UPDATE FUNC -
     private void Update()
     {
+#if UNITY_EDITOR
         if (Input.GetKeyDown(KeyCode.I))
         {
             SkipToSkyscraper(_manager.MovingPlatformOne);
@@ -178,6 +195,12 @@ public class Player : NetworkBehaviour, IPlayerState
         else if (Input.GetKeyDown(KeyCode.O))
         {
             SkipToSkyscraper(_manager.MovingPlatformTwo);
+        }
+#endif
+
+        if(!_canMove)
+        {
+            return;
         }
 
         StateUpdate();
@@ -278,7 +301,11 @@ public class Player : NetworkBehaviour, IPlayerState
             SetState(IPlayerState.PlayerState.Falling);
             _currentKoyoteTime += Time.deltaTime;
         }
-        else
+        else if (_jumping)
+        {
+            _currentKoyoteTime = _stats.MaxKoyoteTime;
+        }
+        else if(IsGrounded())
         {
             _currentKoyoteTime = 0f;
         }
@@ -320,7 +347,7 @@ public class Player : NetworkBehaviour, IPlayerState
         }
 
         // Check if player has jumped
-        if (Input.GetKeyDown(KeyCode.Space) && (IsGrounded() || _currentKoyoteTime < _stats.MaxKoyoteTime))
+        if (Input.GetKeyDown(KeyCode.Space) && (IsGrounded() || _currentKoyoteTime < _stats.MaxKoyoteTime) && !_jumping)
         {
             SetState(IPlayerState.PlayerState.Jumping);
         }
@@ -359,9 +386,11 @@ public class Player : NetworkBehaviour, IPlayerState
         float mouseX = Input.GetAxis("Mouse X");
         float mouseY = Input.GetAxis("Mouse Y");
 
+        const float LookAngle = 85f;
+
         // Update vertical and horizontal rotation
         _verticalRot -= mouseY * _stats.Sensitivity;
-        _verticalRot = Mathf.Clamp(_verticalRot, -70f, 70);
+        _verticalRot = Mathf.Clamp(_verticalRot, -LookAngle, LookAngle);
         _horizontalRot += mouseX * _stats.Sensitivity;
 
         // Rotate camera to mouse position
@@ -527,7 +556,7 @@ public class Player : NetworkBehaviour, IPlayerState
 
         }
 
-        if (ClimbDirection(out Vector3 climbDir, out Vector3 wallNormal))
+        if (ClimbDirection(out Vector3 climbDir, out Vector3 wallNormal) && !_isPullingPlayer)
         {
             // Get direction vectors based on wall
             Vector3 climbUp = climbDir;
@@ -783,17 +812,20 @@ public class Player : NetworkBehaviour, IPlayerState
         }
     }
 
-    private float _rayDistance = 5f; // How far you want to check for hits
+    private const float RayDistance = 10f; // How far you want to check for hits
+    private bool _isPullingPlayer = false;
+    private bool _grabbedPlayer = false;
+    public bool GrabbedPlayed => _grabbedPlayer;
     public void PushPlayer()
     {
         if (!isLocalPlayer) return;
 
-        if (Input.GetMouseButtonDown(1))
+        if (Input.GetMouseButton(1))
         {
             _anim.SetTrigger("interact");
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            Debug.DrawRay(ray.origin, ray.direction * _rayDistance, Color.red);
-            if (Physics.Raycast(ray, out RaycastHit hit, _rayDistance, _stats.PlayerLayer))
+            Debug.DrawRay(ray.origin, ray.direction * RayDistance, Color.red);
+            if (Physics.Raycast(ray, out RaycastHit hit, RayDistance, _stats.PlayerLayer))
             {
                 GameObject hitObject = hit.collider.gameObject;
                 if (hitObject.CompareTag("Player") && hitObject != gameObject)
@@ -802,25 +834,76 @@ public class Player : NetworkBehaviour, IPlayerState
                     NetworkIdentity hitIdentity = hitObject.GetComponent<NetworkIdentity>();
                     if (hitIdentity != null)
                     {
-                        CmdPunch(hitIdentity);
+                        _grabbedPlayer = true;
+                        _stamina.DrainStamina(2f);
+                        CmdGrab(hitIdentity);
                     }
                 }
             }
         }
+        else if(_grabbedPlayer)
+        {
+            _grabbedPlayer = false;
+        }
     }
 
+    //[Command]
+    //private void CmdGrab(NetworkIdentity hitPlayer)
+    //{
+    //    var knockback = hitPlayer.GetComponent<Player>();
+    //    RpcPlayPunch();
+    //    if (knockback != null)
+    //    {
+    //        Debug.Log("[Client] Pushing");
+    //        Vector3 direction = (hitPlayer.transform.position - transform.position).normalized;
+    //        //knockback.RpcApplyKnockback(direction, 10f, 0.25f, 1f); // direction, force, duration, upward
+    //        knockback.RpcPushTowards(direction, 10f, 0.25f, 1f); // direction, force, duration, upward
+    //        //knockback.SetState(IPlayerState.PlayerState.Jumping);
+    //    }
+    //}
+
     [Command]
-    private void CmdPunch(NetworkIdentity hitPlayer)
+    private void CmdGrab(NetworkIdentity hitPlayer)
     {
-        var knockback = hitPlayer.GetComponent<Player>();
+        var player = hitPlayer.GetComponent<Player>();
         RpcPlayPunch();
-        if (knockback != null)
+
+        if (player != null)
         {
-            Debug.Log("[Client] Pushing");
-            Vector3 direction = (hitPlayer.transform.position - transform.position).normalized;
-            knockback.RpcApplyKnockback(direction, 10f, 0.25f, 1f); // direction, force, duration, upward
-            //knockback.SetState(IPlayerState.PlayerState.Jumping);
+            Debug.Log("[Client] Pulling player toward grabber");
+
+            // Pull direction: from the hit player *toward* this player
+            Vector3 direction = (transform.position - hitPlayer.transform.position).normalized;
+
+            // Send to the target client to apply pull
+            player.RpcPushTowards(direction, 1.25f, 0.25f, 1f); // force, duration, upward
         }
+    }
+
+
+    [TargetRpc]
+    public void RpcPushTowards(Vector3 direction, float force, float duration, float upwardForce)
+    {
+        _anim.SetTrigger("interact");
+        StartCoroutine(PullTowardCoroutine(direction, force, duration, upwardForce));
+    }
+
+    private IEnumerator PullTowardCoroutine(Vector3 direction, float force, float duration, float upward)
+    {
+        _isPullingPlayer = true;
+        float elapsed = 0f;
+        CharacterController controller = GetComponent<CharacterController>();
+
+        Vector3 move = direction * force + Vector3.up * upward;
+
+        while (elapsed < duration)
+        {
+            controller.Move(move * Time.deltaTime);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        _isPullingPlayer = false;
     }
 
     [TargetRpc]
@@ -960,6 +1043,12 @@ public class Stamina : IStamina
     public void DrainStamina()
     {
         _currentStamina = Mathf.Max(_minStamina, _currentStamina - Time.deltaTime * _drainScaler);
+        OnStaminaChanged?.Invoke(_currentStamina);
+    }
+
+    public void DrainStamina(float value)
+    {
+        _currentStamina -= value;
         OnStaminaChanged?.Invoke(_currentStamina);
     }
 

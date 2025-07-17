@@ -9,6 +9,7 @@ public class PlayerMiddleDot : MonoBehaviour
     [SerializeField] private Sprite _defaultSprite;
     [SerializeField] private Sprite _climbSprite;
     [SerializeField] private Sprite _climbingSprite;
+    [SerializeField] private Sprite _grabFriendSprite;
 
     public void Init(Player player)
     {
@@ -29,6 +30,10 @@ public class PlayerMiddleDot : MonoBehaviour
         else if (_player.CurrentState == IPlayerState.PlayerState.Climbing)
         {
             _image.sprite = _climbingSprite;
+        }
+        else if (_player.GrabbedPlayed)
+        {
+            _image.sprite = _grabFriendSprite;
         }
         else
         {
