@@ -65,7 +65,8 @@ public class PlayerUI : MonoBehaviour
     #region - TUTORIAL -
     private List<string> _dialogues = new();
     private int _tutorialIdx = -1;
-    public void OpenTutorial(List<string> strings)
+    private bool _showTitle = false;
+    public void OpenTutorial(List<string> strings, bool showTitle)
     {
         if (_canOpenTutorial)
         {
@@ -75,6 +76,10 @@ public class PlayerUI : MonoBehaviour
         _canOpenTutorial = true;
         _tutorialOpenPopup.DOScale(1f, TutorialScaleTime).SetEase(_openEase);
         _dialogues = strings;
+        _showTitle = showTitle;
+
+        _nextPage.enabled = _dialogues.Count != 1;
+        _previousPage.enabled = _dialogues.Count != 1;
     }
     public void CloseTutorial()
     {
@@ -117,7 +122,7 @@ public class PlayerUI : MonoBehaviour
 
         _tutorialIdx = 0;
         _dialogue.text = _dialogues[_tutorialIdx];
-        _gameTitle.gameObject.SetActive(true);
+        _gameTitle.gameObject.SetActive(_showTitle);
     }
 
     private void CloseTutorialPopup()

@@ -50,6 +50,7 @@ public class Player : NetworkBehaviour, IPlayerState
     [SerializeField] private TextMeshPro _playerName;
     private CharacterController _controller;
     private LevelManager _manager;
+    private PlayerAudio _audio;
 
     [Header("Allow Movement")]
     private bool _canMove = false;
@@ -141,6 +142,8 @@ public class Player : NetworkBehaviour, IPlayerState
         _canMove = true;
 
         _controller = GetComponent<CharacterController>();
+
+        _audio = GetComponent<PlayerAudio>();
 
         _cam = Instantiate(_camPrefab, _camPosition);
         _cam.transform.localPosition = Vector3.zero;
@@ -347,9 +350,10 @@ public class Player : NetworkBehaviour, IPlayerState
         }
 
         // Check if player has jumped
-        if (Input.GetKeyDown(KeyCode.Space) && (IsGrounded() || _currentKoyoteTime < _stats.MaxKoyoteTime) && !_jumping)
+        if (Input.GetKeyDown(KeyCode.Space) && (IsGrounded() || _currentKoyoteTime < _stats.MaxKoyoteTime) /*&& !_jumping*/)
         {
             SetState(IPlayerState.PlayerState.Jumping);
+            _audio.JumpAudio();
         }
         // Check if player is idle or moving
         else if (IsGrounded() && _currentJumpHeight == 0)
@@ -480,6 +484,8 @@ public class Player : NetworkBehaviour, IPlayerState
         {
             SetState(IPlayerState.PlayerState.Falling);
         }
+
+        _audio.FootstepAudio(_audio.FootstepWalkingDelay);
     }
 
     public void RunningUpdate()
@@ -501,6 +507,8 @@ public class Player : NetworkBehaviour, IPlayerState
         {
             SetState(IPlayerState.PlayerState.Falling);
         }
+
+        _audio.FootstepAudio(_audio.FootstepRunningDelay);
     }
 
     public void JumpingUpdate()
@@ -590,6 +598,8 @@ public class Player : NetworkBehaviour, IPlayerState
                 Debug.DrawRay(transform.position, climbVector, Color.cyan);
             }
         }
+
+        _audio.ClimbingAudio(_audio.ClimbingDelay);
     }
 
     const float ClimbCheckDistance = 1f;

@@ -35,7 +35,7 @@ public class TutorialOpened : MonoBehaviour
                 if (dialogueSetter != null)
                 {
                     var dialogues = dialogueSetter.Dialogue;
-                    _ui.OpenTutorial(dialogues);
+                    _ui.OpenTutorial(dialogues, dialogueSetter.ShowTitle);
                     return;
                 }
             }
