@@ -1,6 +1,8 @@
 using Mirror;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static Unity.VisualScripting.Member;
 
 public class PlayerAudio : NetworkBehaviour
 {
@@ -90,6 +92,88 @@ public class PlayerAudio : NetworkBehaviour
 
         int rand = Random.Range(0, _climbingSources.Count);
         _climbingSources[rand].Play();
+    }
+    #endregion
+
+    #region - CAR SMASH -
+    [Header("Jumping")]
+    [SerializeField] private AudioSource _carSmash;
+
+    public void CarSmashAudio()
+    {
+        CmdCarSmashAudio();
+    }
+
+    [Command]
+    private void CmdCarSmashAudio()
+    {
+        RpcCarSmashAudio();
+    }
+
+    [ClientRpc]
+    private void RpcCarSmashAudio()
+    {
+        _carSmash.Stop();
+        _carSmash.Play();
+    }
+    #endregion
+
+    #region - BIG IMPACT -
+    [Header("Jumping")]
+    [SerializeField] private AudioSource _bigImpactSource;
+
+    public void BigImpactAudio()
+    {
+        CmdBigImpactAudio();
+    }
+
+    [Command]
+    private void CmdBigImpactAudio()
+    {
+        RpcBigImpactAudio();
+    }
+
+    [ClientRpc]
+    private void RpcBigImpactAudio()
+    {
+        _bigImpactSource.Stop();
+        _bigImpactSource.Play();
+    }
+    #endregion
+
+    #region - FALLING -
+    [Header("Falling")]
+    [SerializeField] private AudioSource _fallingSource;
+
+    public void PlayFallingAudio()
+    {
+        if (!_fallingSource.isPlaying)
+        {
+            _fallingSource.Play();
+        }
+        _fallingSource.volume += Time.deltaTime * .5f;
+    }
+
+    public void StopFallingAudio()
+    {
+        if (_fallingSource.isPlaying)
+        {
+            StartCoroutine(MuteFallingAudio());
+        }
+    }
+
+    private IEnumerator MuteFallingAudio()
+    {
+        float startVolume = _fallingSource.volume;
+
+        while (_fallingSource.volume > 0f)
+        {
+            _fallingSource.volume -= startVolume * Time.deltaTime / 0.5f;
+            yield return null;
+        }
+
+        _fallingSource.volume = 0f;
+        _fallingSource.Stop();
     }
     #endregion
 }

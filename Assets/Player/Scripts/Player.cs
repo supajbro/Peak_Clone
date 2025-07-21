@@ -50,7 +50,10 @@ public class Player : NetworkBehaviour, IPlayerState
     [SerializeField] private TextMeshPro _playerName;
     private CharacterController _controller;
     private LevelManager _manager;
+
+    [Header("Audio")]
     private PlayerAudio _audio;
+    public PlayerAudio Audio => _audio;
 
     [Header("Allow Movement")]
     private bool _canMove = false;
@@ -531,12 +534,14 @@ public class Player : NetworkBehaviour, IPlayerState
     {
         _anim.SetBool("isFalling", true);
         _currentJumpHeight -= Time.deltaTime * _stats.JumpHeightScaler;
+        _audio.PlayFallingAudio();
 
         if (IsGrounded())
         {
             SetState(_currentJumpHeight < _stats.FallPower ? IPlayerState.PlayerState.BigImpact : IPlayerState.PlayerState.Idle);
             _playingLandingBop = true;
             _landingBopTimer = 0f;
+            _audio.StopFallingAudio();
             //_currentJumpHeight = 0f;
         }
     }
@@ -690,6 +695,7 @@ public class Player : NetworkBehaviour, IPlayerState
         {
             _flipTimer = 0f;
             _rotationDegree = (UnityEngine.Random.value) < 0.5f ? 360 : -360;
+            _audio.BigImpactAudio();
         }
 
         _anim.SetBool("isFalling", true);

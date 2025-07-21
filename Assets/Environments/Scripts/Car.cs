@@ -131,6 +131,7 @@ public class Car : NetworkBehaviour
             if (player != null)
             {
                 Debug.Log("[Knockback] Hit Player: " + player.name);
+                player.Audio.CarSmashAudio();
                 Knockback(player);
             }
         }
