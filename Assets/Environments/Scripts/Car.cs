@@ -7,7 +7,7 @@ public class Car : NetworkBehaviour
 {
     [SerializeField] private List<Transform> _points;
 
-    [SerializeField] private GameObject _skyscraper;
+    [SerializeField] private MeshRenderer _skyscraper;
     [SerializeField] private GameObject _body;
     [SerializeField] private GameObject _leftWheel;
     [SerializeField] private GameObject _rightWheel;
@@ -64,7 +64,7 @@ public class Car : NetworkBehaviour
     private Quaternion _previousRot;
     private void CarUpdate()
     {
-        if ((_skyscraper != null && !_skyscraper.activeInHierarchy) && !_activeOnStart)
+        if ((_skyscraper != null && !_skyscraper.enabled) && !_activeOnStart)
         {
             _body.SetActive(false);
             _leftWheel.SetActive(false);
