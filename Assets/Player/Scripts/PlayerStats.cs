@@ -41,6 +41,11 @@ public class PlayerStats : ScriptableObject
     [Header("Knockback")]
     [Tooltip("How long after knockback user can start climbing again")] private float _preventKnockbackTimer = 0.5f;
 
+    [Header("Grabbing")]
+    [SerializeField] private float _grabForce = 5f;
+    [SerializeField] private float _grabDuration = 0.5f;
+    [SerializeField] private float _grabUpwardForce = 0.1f;
+
     [Header("Layer Masks")]
     [SerializeField] private LayerMask _groundLayer;
     [SerializeField] private LayerMask _wallLayer;
@@ -80,6 +85,11 @@ public class PlayerStats : ScriptableObject
 
     // Koyote Time
     public float MaxKoyoteTime => _maxKoyoteTime;
+
+    // Knockback
+    public float GrabForce => _grabForce;
+    public float GrabDuration => _grabDuration;
+    public float GrabUpwardForce => _grabUpwardForce;
 
     // Knockback
     public float PreventKnockbackTimer => _preventKnockbackTimer;

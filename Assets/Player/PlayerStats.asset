@@ -31,6 +31,9 @@ MonoBehaviour:
   _bopWalkSpeed: 7.5
   _bopRunSpeed: 15
   _maxKoyoteTime: 0.25
+  _grabForce: 5
+  _grabDuration: 0.5
+  _grabUpwardForce: 2
   _groundLayer:
     serializedVersion: 2
     m_Bits: 8

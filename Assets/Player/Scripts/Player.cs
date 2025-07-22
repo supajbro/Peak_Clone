@@ -75,6 +75,7 @@ public class Player : NetworkBehaviour, IPlayerState
     [SerializeField] private bool _running = false;
     private float _verticalRot;
     private float _horizontalRot;
+    private Quaternion _facingDirection;
 
     [Header("Jumping")]
     [SerializeField] private bool _jumping = false;
@@ -95,7 +96,10 @@ public class Player : NetworkBehaviour, IPlayerState
     [SerializeField] private float _currentKoyoteTime = 0f;
 
     [Header("Knockback")]
-    private float _knockbackTime = 0f;
+    [Tooltip("Has player started knockback")] private bool _startedKnockback;
+    [Tooltip("If true, finish knockback over X amount of seconds")] private bool _stopKnockbackOvertime = false;
+    [Tooltip("Direction player will move when knockbacked")] private Vector3 _knockbackVelocity;
+    [Tooltip("How long user has been knockback for")] private float _knockbackTime = 0f;
     private bool _knockbackOnImpact = false;
     private Vector3 _previousVelocity = Vector3.zero;
 
@@ -212,7 +216,7 @@ public class Player : NetworkBehaviour, IPlayerState
         StateUpdate();
         RotateUpdate();
         MovementUpdate();
-        PushPlayer();
+        PushPlayerUpdate();
     }
 
     /// <summary>
@@ -257,7 +261,6 @@ public class Player : NetworkBehaviour, IPlayerState
         }
     }
 
-    Quaternion facingDirection;
     /// <summary>
     /// Determines what state the player should be in based on their movement
     /// </summary>
@@ -282,8 +285,8 @@ public class Player : NetworkBehaviour, IPlayerState
         // Rotate player to camera rot
         if (!_startedKnockback)
         {
-            facingDirection = Quaternion.Euler(0, _cam.transform.rotation.eulerAngles.y, 0);
-            transform.rotation = facingDirection;
+            _facingDirection = Quaternion.Euler(0, _cam.transform.rotation.eulerAngles.y, 0);
+            transform.rotation = _facingDirection;
         }
 
         if (CanClimb() && Input.GetMouseButton(0) && _stamina.CurrentStamina > _stamina.MinStamina)
@@ -339,7 +342,7 @@ public class Player : NetworkBehaviour, IPlayerState
         }
 
         // Move player
-        Vector3 move = (facingDirection * movement) * _currentSpeed * Time.deltaTime;
+        Vector3 move = (_facingDirection * movement) * _currentSpeed * Time.deltaTime;
         move.y = _currentJumpHeight * Time.deltaTime;
         _controller?.Move(move);
 
@@ -854,18 +857,19 @@ public class Player : NetworkBehaviour, IPlayerState
     #endregion
 
     #region - GRAB PLAYER -
-    private const float RayDistance = 10f; // How far you want to check for hits
     private bool _isPullingPlayer = false;
     private bool _grabbedPlayer = false;
     public bool GrabbedPlayed => _grabbedPlayer;
-    public void PushPlayer()
+    public void PushPlayerUpdate()
     {
         if (!isLocalPlayer) return;
 
-        if (Input.GetMouseButton(1))
+        if (Input.GetMouseButtonDown(1) && _stamina.CurrentStamina > 0f)
         {
             _anim.SetTrigger("interact");
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            const float RayDistance = 10f; // How far you want to check for hits
+
             Debug.DrawRay(ray.origin, ray.direction * RayDistance, Color.red);
             if (Physics.Raycast(ray, out RaycastHit hit, RayDistance, _stats.PlayerLayer))
             {
@@ -877,7 +881,7 @@ public class Player : NetworkBehaviour, IPlayerState
                     if (hitIdentity != null)
                     {
                         _grabbedPlayer = true;
-                        _stamina.DrainStamina(2f);
+                        _stamina.DrainStamina(25f);
                         CmdGrab(hitIdentity);
                     }
                 }
@@ -893,7 +897,7 @@ public class Player : NetworkBehaviour, IPlayerState
     private void CmdGrab(NetworkIdentity hitPlayer)
     {
         var player = hitPlayer.GetComponent<Player>();
-        RpcPlayPunch();
+        RpcPlayPunchAnimation();
 
         if (player != null)
         {
@@ -903,19 +907,27 @@ public class Player : NetworkBehaviour, IPlayerState
             Vector3 direction = (transform.position - hitPlayer.transform.position).normalized;
 
             // Send to the target client to apply pull
-            player.RpcPushTowards(direction, 1.25f, 0.25f, 1f); // force, duration, upward
+            player.RpcGrab(direction, _stats.GrabForce, _stats.GrabDuration, _stats.GrabUpwardForce); // force, duration, upward
         }
     }
 
-
     [TargetRpc]
-    public void RpcPushTowards(Vector3 direction, float force, float duration, float upwardForce)
+    public void RpcGrab(Vector3 direction, float force, float duration, float upwardForce)
     {
         _anim.SetTrigger("interact");
-        StartCoroutine(PullTowardCoroutine(direction, force, duration, upwardForce));
+        StartCoroutine(GrabCoroutine(direction, force, duration, upwardForce));
     }
 
-    private IEnumerator PullTowardCoroutine(Vector3 direction, float force, float duration, float upward)
+    /// <summary>
+    /// Play animation of punch on all clients
+    /// </summary>
+    [ClientRpc]
+    private void RpcPlayPunchAnimation()
+    {
+        _anim.SetTrigger("interact");
+    }
+
+    private IEnumerator GrabCoroutine(Vector3 direction, float force, float duration, float upward)
     {
         _isPullingPlayer = true;
         float elapsed = 0f;
@@ -932,18 +944,9 @@ public class Player : NetworkBehaviour, IPlayerState
 
         _isPullingPlayer = false;
     }
-
-    [ClientRpc]
-    private void RpcPlayPunch()
-    {
-        _anim.SetTrigger("interact");
-    }
     #endregion
 
     #region - KNOCKBACK -
-    [Tooltip("Has player started knockback")] private bool _startedKnockback;
-    [Tooltip("If true, finish knockback over X amount of seconds")] private bool _stopKnockbackOvertime = false;
-    [Tooltip("Direction player will move when knockbacked")] private Vector3 _knockbackVelocity;
     public void StartKnockback(Vector3 direction, float force, float duration, float upwardForce = 0f, bool stopKnockback = false)
     {
         if (_startedKnockback)
