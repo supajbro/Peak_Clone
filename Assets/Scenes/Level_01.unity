@@ -12161,7 +12161,7 @@ PrefabInstance:
       objectReference: {fileID: 278428008}
     - target: {fileID: 7813374879090441953, guid: 23a39a585ecb06a4bb4cc96e90a742f1, type: 3}
       propertyPath: _speed
-      value: 20
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 7813374879090441953, guid: 23a39a585ecb06a4bb4cc96e90a742f1, type: 3}
       propertyPath: _skyscraper
@@ -100708,7 +100708,7 @@ PrefabInstance:
       objectReference: {fileID: 1370851791}
     - target: {fileID: 7813374879090441953, guid: 23a39a585ecb06a4bb4cc96e90a742f1, type: 3}
       propertyPath: _speed
-      value: 20
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 7813374879090441953, guid: 23a39a585ecb06a4bb4cc96e90a742f1, type: 3}
       propertyPath: _skyscraper

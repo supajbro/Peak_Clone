@@ -44,15 +44,15 @@ public class MovingPlatform : NetworkBehaviour
         //Debug.Log("Highest Player: " + _manager?.FindHighestPlayer()?.name);
         PositionUpdate();
 
-        //if (isServer)
-        //{
-        //    PositionUpdate();
-        //    _syncedPosition = transform.position;
-        //}
-        //else
-        //{
-        //    transform.position = Vector3.Lerp(transform.position, _syncedPosition, Time.deltaTime * 10f);
-        //}
+        if (isServer)
+        {
+            PositionUpdate();
+            _syncedPosition = transform.position;
+        }
+        else
+        {
+            transform.position = Vector3.Lerp(transform.position, _syncedPosition, Time.deltaTime * _speed);
+        }
     }
 
     /// <summary>
