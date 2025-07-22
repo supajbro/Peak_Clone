@@ -257,6 +257,7 @@ public class Player : NetworkBehaviour, IPlayerState
         }
     }
 
+    Quaternion facingDirection;
     /// <summary>
     /// Determines what state the player should be in based on their movement
     /// </summary>
@@ -270,7 +271,7 @@ public class Player : NetworkBehaviour, IPlayerState
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
 
-        ApplyKnockback();
+        KnockbackUpdate();
 
         // Don't run regular movement when player has hit the ground hard
         if (_impact)
@@ -279,8 +280,11 @@ public class Player : NetworkBehaviour, IPlayerState
         }
 
         // Rotate player to camera rot
-        Quaternion facingDirection = Quaternion.Euler(0, _cam.transform.rotation.eulerAngles.y, 0);
-        transform.rotation = facingDirection;
+        if (!_startedKnockback)
+        {
+            facingDirection = Quaternion.Euler(0, _cam.transform.rotation.eulerAngles.y, 0);
+            transform.rotation = facingDirection;
+        }
 
         if (CanClimb() && Input.GetMouseButton(0) && _stamina.CurrentStamina > _stamina.MinStamina)
         {
@@ -390,6 +394,11 @@ public class Player : NetworkBehaviour, IPlayerState
             return;
         }
 
+        if (_startedKnockback)
+        {
+            return;
+        }
+
         float mouseX = Input.GetAxis("Mouse X");
         float mouseY = Input.GetAxis("Mouse Y");
 
@@ -461,6 +470,11 @@ public class Player : NetworkBehaviour, IPlayerState
     #region - STATE UPDATE -
     public void IdleUpdate()
     {
+        if(_currentState != _previousState)
+        {
+            _previousState = _currentState;
+        }
+
         _anim.SetFloat("moveSpeed", 0f);
         _anim.SetBool("isClimbing", false);
         _anim.SetBool("isFalling", false);
@@ -477,6 +491,11 @@ public class Player : NetworkBehaviour, IPlayerState
 
     public void WalkingUpdate()
     {
+        if (_currentState != _previousState)
+        {
+            _previousState = _currentState;
+        }
+
         _anim.SetFloat("moveSpeed", .5f);
         _anim.SetBool("isClimbing", false);
         _stamina.ReplenishStamina();
@@ -493,6 +512,11 @@ public class Player : NetworkBehaviour, IPlayerState
 
     public void RunningUpdate()
     {
+        if (_currentState != _previousState)
+        {
+            _previousState = _currentState;
+        }
+
         _anim.SetFloat("moveSpeed", 1f);
         _anim.SetBool("isClimbing", false);
 
@@ -516,6 +540,11 @@ public class Player : NetworkBehaviour, IPlayerState
 
     public void JumpingUpdate()
     {
+        if (_currentState != _previousState)
+        {
+            _previousState = _currentState;
+        }
+
         _anim.SetBool("isJumping", true);
         _stamina.DrainStamina();
 
@@ -532,13 +561,18 @@ public class Player : NetworkBehaviour, IPlayerState
 
     public void FallingUpdate()
     {
+        if (_currentState != _previousState)
+        {
+            _previousState = _currentState;
+        }
+
         _anim.SetBool("isFalling", true);
         _currentJumpHeight -= Time.deltaTime * _stats.JumpHeightScaler;
         _audio.PlayFallingAudio();
 
         if (IsGrounded())
         {
-            SetState(_currentJumpHeight < _stats.FallPower ? IPlayerState.PlayerState.BigImpact : IPlayerState.PlayerState.Idle);
+            SetState(IPlayerState.PlayerState.Idle /*_currentJumpHeight < _stats.FallPower ? IPlayerState.PlayerState.BigImpact : IPlayerState.PlayerState.Idle*/);
             _playingLandingBop = true;
             _landingBopTimer = 0f;
             _audio.StopFallingAudio();
@@ -629,9 +663,9 @@ public class Player : NetworkBehaviour, IPlayerState
     public bool ClimbDirection(out Vector3 climbDirection, out Vector3 wallNormal)
     {
         // Stop knockback if climbing
-        if (_isKnockback && _knockbackTime >= _stats.PreventKnockbackTimer)
+        if (_startedKnockback && _knockbackTime >= _stats.PreventKnockbackTimer)
         {
-            _isKnockback = false;
+            _startedKnockback = false;
         }
 
         climbDirection = Vector3.zero;
@@ -690,6 +724,11 @@ public class Player : NetworkBehaviour, IPlayerState
 
     public void BigImpactUpdate()
     {
+        if (_currentState != _previousState)
+        {
+            _previousState = _currentState;
+        }
+
         // Init of state
         if (!_impact)
         {
@@ -721,6 +760,7 @@ public class Player : NetworkBehaviour, IPlayerState
         // Rotate 360 degrees
         float degreesPerSecond = _rotationDegree / _flipDuration;
         float deltaRotation = degreesPerSecond * Time.deltaTime;
+        Debug.Log("Rotate: " + _rotationDegree + ", persecond: " + degreesPerSecond + ", Delta: " + deltaRotation);
         transform.Rotate(Vector3.right * deltaRotation, Space.Self);
 
         if (_currentImpactHeight >= _stats.MaxImpactHeight && _flipTimer >= _flipDuration)
@@ -813,21 +853,7 @@ public class Player : NetworkBehaviour, IPlayerState
     }
     #endregion
 
-    public void BouncePlayer()
-    {
-        _anim.SetBool("isJumping", true);
-
-        _jumping = true;
-        _currentJumpHeight = Mathf.Max(_stats.MinJumpHeight, _currentJumpHeight);
-        _currentJumpHeight = (_currentJumpHeight < _stats.MaxBounceHeight) ? _currentJumpHeight + Time.deltaTime * _stats.BounceHeightScaler : _stats.MaxBounceHeight;
-
-        if (_currentJumpHeight >= _stats.MaxBounceHeight)
-        {
-            _jumping = false;
-            SetState(IPlayerState.PlayerState.Falling);
-        }
-    }
-
+    #region - GRAB PLAYER -
     private const float RayDistance = 10f; // How far you want to check for hits
     private bool _isPullingPlayer = false;
     private bool _grabbedPlayer = false;
@@ -862,21 +888,6 @@ public class Player : NetworkBehaviour, IPlayerState
             _grabbedPlayer = false;
         }
     }
-
-    //[Command]
-    //private void CmdGrab(NetworkIdentity hitPlayer)
-    //{
-    //    var knockback = hitPlayer.GetComponent<Player>();
-    //    RpcPlayPunch();
-    //    if (knockback != null)
-    //    {
-    //        Debug.Log("[Client] Pushing");
-    //        Vector3 direction = (hitPlayer.transform.position - transform.position).normalized;
-    //        //knockback.RpcApplyKnockback(direction, 10f, 0.25f, 1f); // direction, force, duration, upward
-    //        knockback.RpcPushTowards(direction, 10f, 0.25f, 1f); // direction, force, duration, upward
-    //        //knockback.SetState(IPlayerState.PlayerState.Jumping);
-    //    }
-    //}
 
     [Command]
     private void CmdGrab(NetworkIdentity hitPlayer)
@@ -922,38 +933,67 @@ public class Player : NetworkBehaviour, IPlayerState
         _isPullingPlayer = false;
     }
 
-    [TargetRpc]
-    public void RpcApplyKnockback(Vector3 direction, float force, float duration, float upwardForce)
-    {
-        Knockback(direction, force, duration, upwardForce);
-        _anim.SetTrigger("interact");
-    }
-
     [ClientRpc]
     private void RpcPlayPunch()
     {
         _anim.SetTrigger("interact");
     }
+    #endregion
 
     #region - KNOCKBACK -
-    private void ApplyKnockback()
+    [Tooltip("Has player started knockback")] private bool _startedKnockback;
+    [Tooltip("If true, finish knockback over X amount of seconds")] private bool _stopKnockbackOvertime = false;
+    [Tooltip("Direction player will move when knockbacked")] private Vector3 _knockbackVelocity;
+    public void StartKnockback(Vector3 direction, float force, float duration, float upwardForce = 0f, bool stopKnockback = false)
     {
-        if (_isKnockback)
+        if (_startedKnockback)
         {
-            if (IsGrounded() && _stopKnockback)
+            return;
+        }
+
+        // Set init values of the knockback
+        _stopKnockbackOvertime = false;
+        Vector3 finalDirection = direction.normalized + Vector3.up * upwardForce;
+        _rotationDegree = (UnityEngine.Random.value) < 0.5f ? 360 : -360;
+        StartCoroutine(KnockbackCoroutine(finalDirection, force, duration, stopKnockback));
+    }
+
+    /// <summary>
+    /// Start knockback for the client
+    /// </summary>
+    [TargetRpc]
+    public void RpcStartKnockback(Vector3 direction, float force, float duration, float upwardForce)
+    {
+        StartKnockback(direction, force, duration, upwardForce);
+        _anim.SetTrigger("interact");
+    }
+
+    /// <summary>
+    /// Movement logic of the knockback
+    /// </summary>
+    private void KnockbackUpdate()
+    {
+        if (_startedKnockback)
+        {
+            // Stop the knockback if player has hit the ground
+            if (IsGrounded() && _stopKnockbackOvertime)
             {
-                Debug.Log("[Knockback] Is knockback: " + _isKnockback + " state: " + _currentState);
-                _isKnockback = false;
+                _startedKnockback = false;
                 _previousVelocity = _knockbackVelocity;
                 _knockbackVelocity = Vector3.zero;
 
-                if(_currentState == IPlayerState.PlayerState.BigImpact)
+                if (_currentState == IPlayerState.PlayerState.BigImpact)
                 {
                     _knockbackOnImpact = true;
                 }
             }
-            Debug.Log("[Knockback] Started knockback: " + gameObject.name);
-            _controller.Move(_knockbackVelocity * Time.deltaTime);
+
+            _controller?.Move(_knockbackVelocity * Time.deltaTime);
+
+            float degreesPerSecond = _rotationDegree / _flipDuration;
+            float deltaRotation = degreesPerSecond * Time.deltaTime;
+            transform.Rotate(Vector3.right * deltaRotation, Space.Self);
+
             _knockbackTime += Time.deltaTime;
         }
         else
@@ -962,23 +1002,12 @@ public class Player : NetworkBehaviour, IPlayerState
         }
     }
 
-    private bool _isKnockback;
-    private bool _stopKnockback = false;
-    private Vector3 _knockbackVelocity;
-    public void Knockback(Vector3 direction, float force, float duration, float upwardForce = 0f, bool stopKnockback = false)
+    /// <summary>
+    /// Stops the knockback over time
+    /// </summary>
+    private IEnumerator KnockbackCoroutine(Vector3 direction, float force, float duration, bool stopKnockback = false)
     {
-        if (_isKnockback)
-        {
-            return;
-        }
-        _stopKnockback = false;
-        Vector3 finalDirection = direction.normalized + Vector3.up * upwardForce;
-        StartCoroutine(DoKnockback(finalDirection, force, duration, stopKnockback));
-    }
-
-    private IEnumerator DoKnockback(Vector3 direction, float force, float duration, bool stopKnockback = false)
-    {
-        _isKnockback = true;
+        _startedKnockback = true;
         float timer = 0f;
         _knockbackVelocity = direction.normalized * force;
 
@@ -988,12 +1017,29 @@ public class Player : NetworkBehaviour, IPlayerState
             yield return null;
         }
 
-        _stopKnockback = true;
+        _stopKnockbackOvertime = true;
 
         if (stopKnockback)
         {
             _knockbackVelocity = Vector3.zero;
-            _isKnockback = false;
+            _startedKnockback = false;
+        }
+    }
+    #endregion
+
+    #region - BOUNCE PLAYER -
+    public void BouncePlayer()
+    {
+        _anim.SetBool("isJumping", true);
+
+        _jumping = true;
+        _currentJumpHeight = Mathf.Max(_stats.MinJumpHeight, _currentJumpHeight);
+        _currentJumpHeight = (_currentJumpHeight < _stats.MaxBounceHeight) ? _currentJumpHeight + Time.deltaTime * _stats.BounceHeightScaler : _stats.MaxBounceHeight;
+
+        if (_currentJumpHeight >= _stats.MaxBounceHeight)
+        {
+            _jumping = false;
+            SetState(IPlayerState.PlayerState.Falling);
         }
     }
     #endregion

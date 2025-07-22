@@ -22,6 +22,6 @@ public class KnockbackPlayer : MonoBehaviour
         }
 
         Vector3 knockbackDirection = -player.transform.forward;
-        player.Knockback(knockbackDirection, _force, _dur, _upwardForce);
+        player.StartKnockback(knockbackDirection, _force, _dur, _upwardForce);
     }
 }

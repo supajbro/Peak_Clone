@@ -145,7 +145,7 @@ public class Car : NetworkBehaviour
     private void Knockback(Player player)
     {
         Vector3 dir = transform.forward;
-        player.Knockback(dir, _force, _knockbackDur, _upwardForce);
+        player.StartKnockback(dir, _force, _knockbackDur, _upwardForce);
     }
 
     private void ResetPath()

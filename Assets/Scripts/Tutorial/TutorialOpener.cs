@@ -42,6 +42,6 @@ public class TutorialOpened : MonoBehaviour
         }
 
         // If no hit, or hit is not on correct layer, close tutorial
-        _ui.CloseTutorial();
+        _ui?.CloseTutorial();
     }
 }
