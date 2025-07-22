@@ -28196,7 +28196,7 @@ MonoBehaviour:
     AvailableRotations:
     - {x: 0, y: -0.70710677, z: 0, w: 0.70710677}
     - {x: 0, y: 0.70710677, z: 0, w: 0.70710677}
-  _parent: {fileID: 365931677}
+  _parent: {fileID: 598404104}
 --- !u!1 &566070512
 GameObject:
   m_ObjectHideFlags: 0
@@ -29805,6 +29805,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2759960757442148988, guid: cadde7815f1e38d439122da1f7c2a476, type: 3}
   m_PrefabInstance: {fileID: 1842713557}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &598404103
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 598404104}
+  m_Layer: 0
+  m_Name: Environment Blocks
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &598404104
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 598404103}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 944708449}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &600897398
 GameObject:
   m_ObjectHideFlags: 0
@@ -45616,6 +45647,7 @@ Transform:
   - {fileID: 2082112020}
   - {fileID: 13064445}
   - {fileID: 1656926918}
+  - {fileID: 598404104}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &948058554
@@ -47614,7 +47646,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca24c6fb33b3a0547b169fc8cf683048, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _parent: {fileID: 0}
+  _parent: {fileID: 987036165}
   _particles:
   - Name: Ground Hit
     Type: 0
@@ -79259,7 +79291,7 @@ MonoBehaviour:
     AvailableRotations:
     - {x: 0, y: -0.70710677, z: 0, w: 0.70710677}
     - {x: 0, y: 0.70710677, z: 0, w: 0.70710677}
-  _parent: {fileID: 90205776}
+  _parent: {fileID: 598404104}
 --- !u!114 &1679840203
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -98811,7 +98843,7 @@ MonoBehaviour:
     CanRotate: 1
     AvailableRotations:
     - {x: -0.70710677, y: 0, z: 0, w: 0.70710677}
-  _parent: {fileID: 764555155}
+  _parent: {fileID: 598404104}
 --- !u!114 &2109780616
 MonoBehaviour:
   m_ObjectHideFlags: 0

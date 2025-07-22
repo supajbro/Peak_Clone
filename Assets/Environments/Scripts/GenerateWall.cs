@@ -77,7 +77,7 @@ public class GenerateWall : NetworkBehaviour
         foreach (var data in _spawnDataList)
         {
             GameObject prefab = _climbBlockPrefabs[data.PrefabIndex].Prefab;
-            GameObject obj = Instantiate(prefab, data.Position, data.Rotation);
+            GameObject obj = Instantiate(prefab, data.Position, data.Rotation, _parent);
             obj.GetComponent<ProceduralBlock>().Init(GetComponent<NetworkIdentity>());
             NetworkServer.Spawn(obj);
         }
