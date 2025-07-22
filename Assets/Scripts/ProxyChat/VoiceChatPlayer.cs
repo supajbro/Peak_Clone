@@ -27,7 +27,7 @@ public class VoiceChatPlayer : NetworkBehaviour
         _audioSource.clip = AudioClip.Create("PlayerVoice", 44100, 1, 44100, false);
         _audioSource.loop = true;
         _audioSource.playOnAwake = false;
-        _audioSource.spatialBlend = 1f; // 3D audio
+        //_audioSource.spatialBlend = 1f; // 3D audio
 
         _audioSource.Play();
         Debug.Log("[Voice] AudioSource clip created and playback started.");
@@ -41,7 +41,7 @@ public class VoiceChatPlayer : NetworkBehaviour
             return;
         }
 
-        _micDevice = Microphone.devices[0];  // Pick the first available mic
+        _micDevice = Microphone.devices[1];  // Pick the first available mic
         Debug.Log($"[Voice] Using mic device: {_micDevice}");
 
         _microphoneClip = Microphone.Start(_micDevice, true, 1, 44100);
@@ -56,14 +56,12 @@ public class VoiceChatPlayer : NetworkBehaviour
         }
     }
 
-    private const int sendRate = 441; // 441 samples = 10ms at 44.1kHz
+    private const int sendRate = 512; // 441 samples = 10ms at 44.1kHz
 
     private void Update()
     {
         if (!isLocalPlayer)
-        {
             return;
-        }
 
         if (!_micReady)
         {
@@ -99,18 +97,35 @@ public class VoiceChatPlayer : NetworkBehaviour
 
             Debug.Log($"[Voice] Sending audio data: {data.Length} bytes");
 
-            CmdSendVoice(data);
+            SendInChunks(data); // ✅ CHANGED
         }
     }
 
-    [Command(channel = Channels.Unreliable)]
+    private const int MaxPacketSize = 1000;
+
+    void SendInChunks(byte[] fullData)
+    {
+        int offset = 0;
+        while (offset < fullData.Length)
+        {
+            int chunkSize = Mathf.Min(MaxPacketSize, fullData.Length - offset);
+            byte[] chunk = new byte[chunkSize];
+            Buffer.BlockCopy(fullData, offset, chunk, 0, chunkSize);
+            CmdSendVoice(chunk);
+            offset += chunkSize;
+        }
+    }
+
+    [Command(channel = Channels.Reliable)]
     void CmdSendVoice(byte[] data)
     {
         Debug.Log($"[VoiceChat] Received voice data from client, size: {data.Length}");
         RpcReceiveVoice(data);
     }
 
-    [ClientRpc(channel = Channels.Unreliable)]
+    private int _audioWritePosition = 0;
+
+    [ClientRpc(channel = Channels.Reliable)]
     void RpcReceiveVoice(byte[] data)
     {
         Debug.Log($"[RPC] Received audio data: {data?.Length ?? 0} bytes");
@@ -152,7 +167,10 @@ public class VoiceChatPlayer : NetworkBehaviour
 
         try
         {
-            _audioSource.clip.SetData(floatData, 0);
+            //_audioSource.clip.SetData(floatData, 0);
+            int writePos = _audioWritePosition % _audioSource.clip.samples;
+            _audioSource.clip.SetData(floatData, writePos);
+            _audioWritePosition += floatData.Length;
         }
         catch (Exception e)
         {
@@ -166,7 +184,6 @@ public class VoiceChatPlayer : NetworkBehaviour
             Debug.Log("[RPC] Playing audio source at distance: " + dist);
         }
     }
-
 
     public static byte[] FloatArrayToByteArray(float[] floatArray)
     {
