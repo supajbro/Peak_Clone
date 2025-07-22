@@ -62,6 +62,27 @@ public class PlayerAudio : NetworkBehaviour
     }
     #endregion
 
+    #region - LANDING -
+    [Header("Footsteps")]
+    [SerializeField] private AudioSource _landingSource;
+    public void PlayLandingAudio()
+    {
+        CmdPlayLandingAudio();
+    }
+
+    [Command]
+    private void CmdPlayLandingAudio()
+    {
+        RpcPlayLandingAudio();
+    }
+
+    [ClientRpc]
+    private void RpcPlayLandingAudio()
+    {
+        _landingSource.Play();
+    }
+    #endregion
+
     #region - CLIMBING -
     [Header("Footsteps")]
     [SerializeField] private List<AudioSource> _climbingSources;
@@ -174,6 +195,30 @@ public class PlayerAudio : NetworkBehaviour
 
         _fallingSource.volume = 0f;
         _fallingSource.Stop();
+    }
+    #endregion
+
+    #region - BOUNCING -
+    [Header("Jumping")]
+    [SerializeField] private List<AudioSource> _bouncingSources;
+
+    public void PlayBouncingAudio()
+    {
+        CmdPlayBouncingAudio();
+    }
+
+    [Command]
+    private void CmdPlayBouncingAudio()
+    {
+        RpcPlayBouncingAudio();
+    }
+
+    [ClientRpc]
+    private void RpcPlayBouncingAudio()
+    {
+        var rand = Random.Range(0, _bouncingSources.Count);
+        _bouncingSources[rand].Stop();
+        _bouncingSources[rand].Play();
     }
     #endregion
 }

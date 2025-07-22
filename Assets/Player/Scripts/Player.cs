@@ -49,6 +49,7 @@ public class Player : NetworkBehaviour, IPlayerState
     [SerializeField] private List<SkinnedMeshRenderer> _meshToHide;
     [SerializeField] private TextMeshPro _playerName;
     private CharacterController _controller;
+    private PlayerParticles _particles;
     private LevelManager _manager;
 
     [Header("Audio")]
@@ -151,6 +152,7 @@ public class Player : NetworkBehaviour, IPlayerState
         _controller = GetComponent<CharacterController>();
 
         _audio = GetComponent<PlayerAudio>();
+        _particles = GetComponent<PlayerParticles>();
 
         _cam = Instantiate(_camPrefab, _camPosition);
         _cam.transform.localPosition = Vector3.zero;
@@ -579,6 +581,7 @@ public class Player : NetworkBehaviour, IPlayerState
             _playingLandingBop = true;
             _landingBopTimer = 0f;
             _audio.StopFallingAudio();
+            _audio.PlayLandingAudio();
             //_currentJumpHeight = 0f;
         }
     }
@@ -1038,6 +1041,9 @@ public class Player : NetworkBehaviour, IPlayerState
         _jumping = true;
         _currentJumpHeight = Mathf.Max(_stats.MinJumpHeight, _currentJumpHeight);
         _currentJumpHeight = (_currentJumpHeight < _stats.MaxBounceHeight) ? _currentJumpHeight + Time.deltaTime * _stats.BounceHeightScaler : _stats.MaxBounceHeight;
+
+        _audio.PlayBouncingAudio();
+        _particles.PlayGroundHitText();
 
         if (_currentJumpHeight >= _stats.MaxBounceHeight)
         {

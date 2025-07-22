@@ -24,6 +24,7 @@ public class PlayerParticles : NetworkBehaviour
         PlayGroundHit();
     }
 
+    #region - GROUND HIT -
     public void PlayGroundHit()
     {
         if (_player.CurrentState != _player.PreviousState &&_player.CurrentState == IPlayerState.PlayerState.BigImpact)
@@ -52,4 +53,24 @@ public class PlayerParticles : NetworkBehaviour
             });
         });
     }
+    #endregion
+
+    #region - GROUND HIT TEXT -
+    public void PlayGroundHitText()
+    {
+        CmdGroundHitText();
+    }
+
+    [Command]
+    private void CmdGroundHitText()
+    {
+        RpcGroundHitText();
+    }
+
+    [ClientRpc]
+    private void RpcGroundHitText()
+    {
+        ParticlePooler.Instance.PlayParticle(ParticlePooler.ParticleType.GroundHitText, _groundHit.position);
+    }
+    #endregion
 }
