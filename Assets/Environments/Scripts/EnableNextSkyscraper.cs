@@ -8,12 +8,21 @@ public class EnableNextSkyscraper : NetworkBehaviour
 {
     [SerializeField] private GameObject _next;
     [SerializeField] private MeshRenderer _mesh;
+
+    [Header("Check to see if any user has reached top")]
     [SyncVar(hook = nameof(OnNextSkyscraperStateChanged))]
-    private bool _isNextActive = false;
-    public bool IsNextActive => _isNextActive;
+    [SerializeField] private bool _reachedTopSkyscraper = false;
+    public bool ReachedTopSkyscraper => _reachedTopSkyscraper;
+
+    [Header("Check to enable next skyscraper")]
+    [SyncVar(hook = nameof(OnNextSkyscraperStateChanged))]
+    [SerializeField] private bool _activateNextSkyscraper = false;
+    public bool ActivateNextSkyscraper => _activateNextSkyscraper;
+
+    [Header("Enable these objects when skyscraper is enabled")]
     [SerializeField] private List<GameObject> _objsToEnable;
 
-    [Header("Dissolve")]
+    [Header("Dissolve Material")]
     [SerializeField] private MeshRenderer _dissolveMesh;
     private Material _dissolveMat;
 
@@ -30,15 +39,15 @@ public class EnableNextSkyscraper : NetworkBehaviour
     {
         if (!isServer) return;
 
-        if (other.CompareTag("Player") && !_isNextActive)
+        if (other.CompareTag("Player") && !_activateNextSkyscraper)
         {
-            _isNextActive = true;
+            _activateNextSkyscraper = true;
+            _reachedTopSkyscraper = true;
         }
     }
 
     private void OnNextSkyscraperStateChanged(bool oldValue, bool newValue)
     {
-        //_next.SetActive(newValue);
         _mesh.enabled = newValue;
 
         if (newValue)
@@ -55,10 +64,9 @@ public class EnableNextSkyscraper : NetworkBehaviour
     public override void OnStartClient()
     {
         // Late joiners will have the SyncVar's current value
-        //_next.SetActive(_isNextActive);
-        _mesh.enabled = _isNextActive;
+        _mesh.enabled = _activateNextSkyscraper;
 
-        if (_isNextActive)
+        if (_activateNextSkyscraper)
         {
             foreach (var _obj in _objsToEnable)
             {

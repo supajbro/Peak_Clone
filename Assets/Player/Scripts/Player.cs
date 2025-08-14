@@ -43,14 +43,18 @@ public class Player : NetworkBehaviour, IPlayerState
     }
     #endregion
 
+    #region - VARIABLES -
     [Header("Main")]
     [SerializeField] private PlayerStats _stats;
     [SerializeField] private Animator _anim;
     [SerializeField] private List<SkinnedMeshRenderer> _meshToHide;
-    [SerializeField] private TextMeshPro _playerName;
     private CharacterController _controller;
     private PlayerParticles _particles;
     private LevelManager _manager;
+
+    [Header("Name")]
+    [SerializeField] private TextMeshPro _playerNameTxt;
+    [SyncVar] private string _playerName;
 
     [Header("Audio")]
     private PlayerAudio _audio;
@@ -123,27 +127,36 @@ public class Player : NetworkBehaviour, IPlayerState
     [SerializeField] private Transform _frontRight;
     [SerializeField] private Transform _frontLeft;
 
+    [Header("Game Timer")]
+    [SerializeField, SyncVar] private float _time;
+    public Action<float> OnTimeChanged;
+    #endregion
+
     #region - INIT -
     private void Start()
     {
         LocalPlayerInit();
+
+        // Set the local player name for all clients
+        _playerNameTxt.text = _playerName;
+        gameObject.name = _playerName;
+
         GameManager.Instance?.AddPlayers(this);
         SpawnLocalPlayerUI();
     }
 
     private void LocalPlayerInit()
     {
-        _playerName.text = SteamManager.Initialized && !string.IsNullOrEmpty(SteamFriends.GetPersonaName())
-            ? SteamFriends.GetPersonaName()
-            : "Player: " + UnityEngine.Random.Range(10, 1000);
-        gameObject.name = _playerName.text;
 
         if (!isLocalPlayer)
         {
             return;
         }
 
-        _playerName.gameObject.SetActive(false);
+        _playerName = SteamManager.Initialized && !string.IsNullOrEmpty(SteamFriends.GetPersonaName())
+            ? SteamFriends.GetPersonaName()
+            : "Player: " + UnityEngine.Random.Range(10, 1000);
+        _playerNameTxt.gameObject.SetActive(false);
 
         GameManager.Instance.LocalPlayer = this;
 
@@ -219,6 +232,7 @@ public class Player : NetworkBehaviour, IPlayerState
         RotateUpdate();
         MovementUpdate();
         PushPlayerUpdate();
+        ServerUpdate();
     }
 
     /// <summary>
@@ -380,6 +394,20 @@ public class Player : NetworkBehaviour, IPlayerState
                 SetState((_running) ? IPlayerState.PlayerState.Running : IPlayerState.PlayerState.Walking);
             }
         }
+    }
+
+    /// <summary>
+    /// Code for the host to update
+    /// </summary>
+    private void ServerUpdate()
+    {
+        if (!isServer)
+        {
+            return;
+        }
+
+        _time += Time.deltaTime;
+        OnTimeChanged.Invoke(_time);
     }
     #endregion
 

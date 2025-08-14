@@ -8,7 +8,6 @@ public class PlayerUI : MonoBehaviour
 {
     [Header("Managers")]
     private Player _player;
-    private LevelManager _manager;
 
     [SerializeField] private TextMeshProUGUI _playerState;
     [SerializeField] private Slider _stamineSlider;
@@ -16,6 +15,9 @@ public class PlayerUI : MonoBehaviour
     [Header("Tracker")]
     [SerializeField] private Image _tracker;
     public Image Tracker => _tracker;
+
+    [Header("Timer")]
+    [SerializeField] private TextMeshProUGUI _timeTxt;
 
     [Header("Middle Dot")]
     [SerializeField] private PlayerMiddleDot _dot;
@@ -37,13 +39,13 @@ public class PlayerUI : MonoBehaviour
     public void InitUI(Player thisPlayer)
     {
         _player = thisPlayer;
-        _manager = FindObjectOfType<LevelManager>();
         _dot.Init(_player);
+        _player.OnTimeChanged += UpdateTimeText;
     }
 
     private void Start()
     {
-        _player.OnPlayerStateChanged += UpdatePlayerStateText;
+        //_player.OnPlayerStateChanged += UpdatePlayerStateText;
         _player.MyStamina.OnStaminaChanged += UpdateStaminaSlider;
         _tutorialBackPanel.GetComponent<Button>().onClick.AddListener(CloseTutorialPopup);
         _nextPage.onClick.AddListener(NextPage);
@@ -59,6 +61,13 @@ public class PlayerUI : MonoBehaviour
     private void UpdateStaminaSlider(float value)
     {
         _stamineSlider.value = value;
+    }
+    #endregion
+
+    #region - TIMER -
+    private void UpdateTimeText(float currentTime)
+    {
+        _timeTxt.text = $"{currentTime:F2}";
     }
     #endregion
 

@@ -232,7 +232,7 @@ MonoBehaviour:
   - {fileID: 1905072248613993484}
   - {fileID: 8699940348221421589}
   - {fileID: 3541740504086522511}
-  _playerName: {fileID: 1916297633330786581}
+  _playerNameTxt: {fileID: 1916297633330786581}
   _uiPrefab: {fileID: 7771001418215781313, guid: a615be196de128640b731e8984c7a9a9, type: 3}
   _camPrefab: {fileID: 5469460888547916821, guid: 7e79ec819b132d34f8cc923c4c447e67, type: 3}
   _camPosition: {fileID: 9199886159177958217}

@@ -1,3 +1,4 @@
+using DG.Tweening;
 using Mirror;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,6 +14,12 @@ public class MovingPlatform : NetworkBehaviour
     [Header("Speed")]
     [SerializeField] private float _speed = 10f;
 
+    [Header("Arrow")]
+    [SerializeField] private GameObject _arrow;
+    [SerializeField] private Vector3 _scaleUpSize = Vector3.one;
+    [SerializeField] private float _scaleTime = .5f;
+    [SerializeField] private Ease _ease;
+
     [Header("Checks")]
     [SerializeField] private bool _active = false;
     [SerializeField] private bool _activeOnStart = false;
@@ -21,29 +28,28 @@ public class MovingPlatform : NetworkBehaviour
     private int _index = -1;
     private Vector3 _nextPath = Vector3.zero;
 
-    // DEPRECATED
-    [SyncVar] private Vector3 _syncedPosition;
+    [SyncVar, Tooltip("Ensure position is same across all clients")] private Vector3 _syncedPosition;
 
     private void Start()
     {
         ResetPath();
         _manager = FindObjectOfType<LevelManager>();
         _nextPath = transform.position;
+        _arrow.transform.localScale = Vector3.zero;
     }
 
     private Player _highestPlayer;
     private void OnTriggerEnter(Collider collision)
     {
         _active = true;
-
         _highestPlayer = _manager.FindHighestPlayer();
     }
 
     private void Update()
     {
-        //Debug.Log("Highest Player: " + _manager?.FindHighestPlayer()?.name);
         PositionUpdate();
-
+        
+        // Sync position
         if (isServer)
         {
             PositionUpdate();
@@ -60,47 +66,47 @@ public class MovingPlatform : NetworkBehaviour
     /// </summary>
     private void PositionUpdate()
     {
-        if (!_skyscraper.IsNextActive && !_activeOnStart)
+        // Decide if mesh should be enabled
+        if (!_skyscraper.ActivateNextSkyscraper && !_activeOnStart)
         {
             _mesh.SetActive(false);
             return;
         }
         _mesh.SetActive(true);
 
-        if (!_active)
+        EnableArrow();
+
+        if (!_active || _highestPlayer == null)
         {
             return;
         }
 
-        if (_highestPlayer == null)
-        {
-            return;
-        }
-
+        // Reached the end point, move pack
         if (_index >= _points.Count - 1)
         {
             StartCoroutine(RepositionDelay());
             return;
         }
 
-        if (_waiting)
+        // Reached top and waiting to respawn
+        if (_waitingToRespawn)
         {
             return;
         }
 
-        //Vector3 next = _points[_index + 1].position;
-
-        //if (_manager.FindHighestPlayer() == GameManager.Instance.LocalPlayer)
-        if(Vector3.Distance(_highestPlayer.transform.position, _points[0].transform.position) < 10f)
+        // Don't move the platform
+        if(Vector3.Distance(_highestPlayer.transform.position, _points[0].transform.position) < 10f && !_skyscraper.ReachedTopSkyscraper)
         {
             _nextPath.y = transform.position.y;
             Debug.Log("[Moving] Not moving: " + _nextPath.y);
         }
-        else if (_highestPlayer.transform.position.y > _points[1].position.y)
+        // Moving to the top of the skyscraper
+        else if (_highestPlayer.transform.position.y > _points[1].position.y || _skyscraper.ReachedTopSkyscraper)
         {
             _nextPath.y = _points[1].position.y;
             Debug.Log("[Moving] Moving to top: " + _nextPath.y);
         }
+        // Move to the highest player
         else
         {
             _nextPath.y = _highestPlayer.transform.position.y;
@@ -116,6 +122,16 @@ public class MovingPlatform : NetworkBehaviour
         }
     }
 
+    private bool _previousReachedSkyscraper = false;
+    private void EnableArrow()
+    {
+        if (_skyscraper.ReachedTopSkyscraper && !_previousReachedSkyscraper)
+        {
+            _previousReachedSkyscraper = true;
+            _arrow.transform.DOScale(_scaleUpSize, _scaleTime).SetEase(_ease);
+        }
+    }
+
     private void ResetPath()
     {
         _active = false;
@@ -124,12 +140,12 @@ public class MovingPlatform : NetworkBehaviour
         transform.position = cur;
     }
 
-    private bool _waiting = false;
+    private bool _waitingToRespawn = false;
     private IEnumerator RepositionDelay()
     {
-        _waiting = true;
+        _waitingToRespawn = true;
         yield return new WaitForSeconds(5f);
         ResetPath();
-        _waiting = false;
+        _waitingToRespawn = false;
     }
 }

@@ -12166,10 +12166,10 @@ PrefabInstance:
     - target: {fileID: 7813374879090441953, guid: 23a39a585ecb06a4bb4cc96e90a742f1, type: 3}
       propertyPath: _skyscraper
       value: 
-      objectReference: {fileID: 1843890889}
+      objectReference: {fileID: 1367565886}
     - target: {fileID: 7813374879090441953, guid: 23a39a585ecb06a4bb4cc96e90a742f1, type: 3}
       propertyPath: _activeOnStart
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8669339586662067843, guid: 23a39a585ecb06a4bb4cc96e90a742f1, type: 3}
       propertyPath: sceneId
@@ -29645,6 +29645,8 @@ MonoBehaviour:
   syncInterval: 0
   _next: {fileID: 365931676}
   _mesh: {fileID: 565852841}
+  _reachedTopSkyscraper: 0
+  _activateNextSkyscraper: 0
   _objsToEnable: []
   _dissolveMesh: {fileID: 0}
 --- !u!65 &594645683
@@ -62953,6 +62955,8 @@ MonoBehaviour:
   syncInterval: 0
   _next: {fileID: 365931676}
   _mesh: {fileID: 565852841}
+  _reachedTopSkyscraper: 0
+  _activateNextSkyscraper: 0
   _objsToEnable:
   - {fileID: 746064295}
   - {fileID: 183083475}
@@ -87631,6 +87635,8 @@ MonoBehaviour:
   syncInterval: 0
   _next: {fileID: 90205775}
   _mesh: {fileID: 1679840206}
+  _reachedTopSkyscraper: 0
+  _activateNextSkyscraper: 0
   _objsToEnable: []
   _dissolveMesh: {fileID: 473586271}
 --- !u!114 &1843890890

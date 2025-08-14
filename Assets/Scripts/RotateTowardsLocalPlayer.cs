@@ -13,7 +13,13 @@ public class RotateTowardsLocalPlayer : MonoBehaviour
 
     private void Update()
     {
-        if(_player == null)
+        if (_manager == null)
+        {
+            _manager = GameManager.Instance;
+            return;
+        }
+
+        if (_player == null)
         {
             _player = _manager?.LocalPlayer;
             return;

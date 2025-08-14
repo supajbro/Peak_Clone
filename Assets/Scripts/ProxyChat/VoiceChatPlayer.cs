@@ -7,16 +7,12 @@ using UnityEngine;
 public class VoiceChatPlayer : NetworkBehaviour
 {
     [Header("Settings")]
-    public float proximityRange = 15f;
+    [SerializeField] private float _proximityRange = 15f;
 
     private AudioSource _audioSource;
     private AudioClip _microphoneClip;
-    private const int sampleRate = 44100;
-    private const int micLengthSec = 1;
 
     private int _lastSamplePosition;
-    private float[] _audioData = new float[sampleRate];
-
     private string _micDevice;
     private bool _micReady = false;
 
@@ -97,7 +93,7 @@ public class VoiceChatPlayer : NetworkBehaviour
 
             Debug.Log($"[Voice] Sending audio data: {data.Length} bytes");
 
-            SendInChunks(data); // ✅ CHANGED
+            SendInChunks(data);
         }
     }
 
@@ -119,7 +115,7 @@ public class VoiceChatPlayer : NetworkBehaviour
     [Command(channel = Channels.Reliable)]
     void CmdSendVoice(byte[] data)
     {
-        Debug.Log($"[VoiceChat] Received voice data from client, size: {data.Length}");
+        Debug.Log($"[Voice] Received voice data from client, size: {data.Length}");
         RpcReceiveVoice(data);
     }
 
@@ -128,40 +124,40 @@ public class VoiceChatPlayer : NetworkBehaviour
     [ClientRpc(channel = Channels.Reliable)]
     void RpcReceiveVoice(byte[] data)
     {
-        Debug.Log($"[RPC] Received audio data: {data?.Length ?? 0} bytes");
+        Debug.Log($"[Voice RPC] Received audio data: {data?.Length ?? 0} bytes");
 
         if (isLocalPlayer)
             return;
 
         if (data == null || data.Length == 0)
         {
-            Debug.LogWarning("[RPC] Received empty or null audio data");
+            Debug.LogWarning("[Voice RPC] Received empty or null audio data");
             return;
         }
 
         if (_audioSource == null)
         {
-            Debug.LogError("[RPC] AudioSource is null on " + gameObject.name);
+            Debug.LogError("[Voice RPC] AudioSource is null on " + gameObject.name);
             return;
         }
 
         if (_audioSource.clip == null)
         {
-            Debug.LogError("[RPC] AudioSource.clip is null on " + gameObject.name);
+            Debug.LogError("[Voice RPC] AudioSource.clip is null on " + gameObject.name);
             return;
         }
 
         float dist = Vector3.Distance(transform.position, NetworkClient.localPlayer.transform.position);
-        if (dist > proximityRange)
+        if (dist > _proximityRange)
         {
-            Debug.Log("[RPC] Ignored voice due to distance: " + dist);
+            Debug.Log("[Voice RPC] Ignored voice due to distance: " + dist);
             return;
         }
 
         float[] floatData = ByteArrayToFloatArray(data);
         if (floatData == null || floatData.Length == 0)
         {
-            Debug.LogWarning("[RPC] Received invalid audio data");
+            Debug.LogWarning("[Voice RPC] Received invalid audio data");
             return;
         }
 
@@ -174,14 +170,14 @@ public class VoiceChatPlayer : NetworkBehaviour
         }
         catch (Exception e)
         {
-            Debug.LogError("[RPC] Exception setting audio data: " + e);
+            Debug.LogError("[Voice RPC] Exception setting audio data: " + e);
             return;
         }
 
         if (!_audioSource.isPlaying)
         {
             _audioSource.Play();
-            Debug.Log("[RPC] Playing audio source at distance: " + dist);
+            Debug.Log("[Voice RPC] Playing audio source at distance: " + dist);
         }
     }
 
